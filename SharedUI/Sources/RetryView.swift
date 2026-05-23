@@ -25,3 +25,9 @@ public struct RetryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    RetryView(message: "No internet connection.") {}
+}

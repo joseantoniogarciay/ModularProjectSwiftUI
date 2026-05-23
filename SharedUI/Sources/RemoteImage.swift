@@ -16,3 +16,10 @@ public struct RemoteImage: View {
             .aspectRatio(contentMode: .fit)
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    RemoteImage(url: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"))
+        .frame(width: 200, height: 200)
+}

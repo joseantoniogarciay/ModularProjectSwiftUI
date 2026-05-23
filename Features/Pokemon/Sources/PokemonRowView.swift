@@ -21,3 +21,14 @@ struct PokemonRowView: View {
         .padding(.vertical, 4)
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    PokemonRowView(pokemon: Pokemon(
+        id: 25,
+        name: "pikachu",
+        imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")
+    ))
+    .padding()
+}

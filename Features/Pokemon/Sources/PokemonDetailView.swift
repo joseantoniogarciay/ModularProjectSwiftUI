@@ -126,3 +126,46 @@ public struct PokemonDetailView: View {
         }
     }
 }
+
+// MARK: - Previews
+
+private struct PreviewDetailRepository: PokemonRepository {
+    func list(offset: Int, limit: Int) async throws(PokemonListError) -> [Pokemon] { [] }
+
+    func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
+        PokemonDetail(
+            id: 25, name: "pikachu",
+            imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"),
+            types: ["electric"],
+            heightDecimetres: 4,
+            weightHectograms: 60,
+            stats: [
+                PokemonStat(name: "hp",       baseValue: 35),
+                PokemonStat(name: "attack",   baseValue: 55),
+                PokemonStat(name: "defense",  baseValue: 40),
+                PokemonStat(name: "sp. atk",  baseValue: 50),
+                PokemonStat(name: "sp. def",  baseValue: 50),
+                PokemonStat(name: "speed",    baseValue: 90),
+            ]
+        )
+    }
+}
+
+private struct ErrorDetailRepository: PokemonRepository {
+    func list(offset: Int, limit: Int) async throws(PokemonListError) -> [Pokemon] { [] }
+    func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
+        throw PokemonDetailError.noConnection
+    }
+}
+
+#Preview("Detail – loaded") {
+    NavigationStack {
+        PokemonDetailView(pokemonID: 25, store: PokemonStore(repository: PreviewDetailRepository()))
+    }
+}
+
+#Preview("Detail – error") {
+    NavigationStack {
+        PokemonDetailView(pokemonID: 25, store: PokemonStore(repository: ErrorDetailRepository()))
+    }
+}

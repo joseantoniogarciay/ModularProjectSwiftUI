@@ -14,3 +14,9 @@ public struct LoadingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    LoadingView()
+}

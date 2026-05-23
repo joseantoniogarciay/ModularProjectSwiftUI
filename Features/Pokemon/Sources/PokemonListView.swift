@@ -13,17 +13,16 @@ public struct PokemonListView: View {
         NavigationStack {
             content
                 .navigationTitle("Pokémon")
-                .task { await store.loadFirstPage() }
                 .refreshable { await store.loadFirstPage() }
         }
+        // Attached to NavigationStack so the task survives content-type changes.
+        .task { await store.loadFirstPage() }
     }
 
     @ViewBuilder
     private var content: some View {
         switch store.listState {
-        case .idle:
-            EmptyView()
-        case .loading where store.pokemons.isEmpty:
+        case .idle, .loading where store.pokemons.isEmpty:
             LoadingView()
         case .error(let error) where store.pokemons.isEmpty:
             RetryView(message: listErrorMessage(error)) {
@@ -52,4 +51,38 @@ public struct PokemonListView: View {
         case .unknown: return "Something went wrong."
         }
     }
+}
+
+// MARK: - Previews
+
+private struct PreviewRepository: PokemonRepository {
+    func list(offset: Int, limit: Int) async throws(PokemonListError) -> [Pokemon] {
+        [
+            Pokemon(id: 1,  name: "bulbasaur",  imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png")),
+            Pokemon(id: 4,  name: "charmander", imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png")),
+            Pokemon(id: 7,  name: "squirtle",   imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png")),
+            Pokemon(id: 25, name: "pikachu",    imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")),
+            Pokemon(id: 39, name: "jigglypuff", imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/39.png")),
+        ]
+    }
+    func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
+        throw PokemonDetailError.unknown(URLError(.unknown))
+    }
+}
+
+private struct ErrorRepository: PokemonRepository {
+    func list(offset: Int, limit: Int) async throws(PokemonListError) -> [Pokemon] {
+        throw PokemonListError.noConnection
+    }
+    func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
+        throw PokemonDetailError.noConnection
+    }
+}
+
+#Preview("List – loaded") {
+    PokemonListView(store: PokemonStore(repository: PreviewRepository()))
+}
+
+#Preview("List – error") {
+    PokemonListView(store: PokemonStore(repository: ErrorRepository()))
 }
