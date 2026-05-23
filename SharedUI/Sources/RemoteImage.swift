@@ -4,6 +4,8 @@ import SwiftUI
 public struct RemoteImage: View {
     private let url: URL?
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     public init(url: URL?) {
         self.url = url
     }
@@ -11,7 +13,8 @@ public struct RemoteImage: View {
     public var body: some View {
         KFImage(url)
             .placeholder { ProgressView() }
-            .fade(duration: 0.25)
+            // Honour Reduce Motion: pass duration 0 to skip the cross-fade animation.
+            .fade(duration: reduceMotion ? 0 : 0.25)
             .resizable()
             .aspectRatio(contentMode: .fit)
     }

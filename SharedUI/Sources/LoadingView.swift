@@ -6,8 +6,8 @@ public struct LoadingView: View {
     public var body: some View {
         VStack(spacing: 16) {
             ProgressView()
-                .scaleEffect(1.5)
-            Text("Loading…")
+                .controlSize(.large)
+            Text(SharedUIStrings.loadingLabel)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

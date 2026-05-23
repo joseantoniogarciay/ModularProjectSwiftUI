@@ -1,0 +1,5 @@
+/* LoadingView spinner label */
+"loading_label" = "Loading…";
+
+/* RetryView retry button */
+"retry_button_title" = "Try again";

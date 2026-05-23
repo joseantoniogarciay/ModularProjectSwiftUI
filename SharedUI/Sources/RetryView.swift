@@ -14,11 +14,12 @@ public struct RetryView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 44))
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)  // decorative — the message below conveys the error
             Text(message)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
-            Button("Try again", action: action)
+            Button(SharedUIStrings.retryButtonTitle, action: action)
                 .buttonStyle(.borderedProminent)
         }
         .padding()
