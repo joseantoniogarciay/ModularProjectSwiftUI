@@ -1,0 +1,10 @@
+**/Derived/
+**/*.xcodeproj
+**/*.xcworkspace
+.build/
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+.DS_Store
+.worktrees/
+**/build/
