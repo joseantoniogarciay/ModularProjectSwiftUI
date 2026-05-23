@@ -34,6 +34,14 @@ public final class PokemonStore {
 
     // MARK: - List
 
+    /// Loads the first page only if no data has been fetched yet.
+    /// Use this from `.task` in list views so navigating back doesn't trigger a reload.
+    /// Pull-to-refresh should call `loadFirstPage()` directly.
+    public func loadPokemonsIfNeeded() async {
+        guard pokemons.isEmpty, case .idle = listState else { return }
+        await loadFirstPage()
+    }
+
     public func loadFirstPage() async {
         currentOffset = 0
         pokemons = []
