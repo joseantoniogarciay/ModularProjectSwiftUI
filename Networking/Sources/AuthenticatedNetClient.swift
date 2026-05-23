@@ -60,11 +60,11 @@ public struct AuthenticatedNetClient: NetClient {
         let builder = NetRequest.Builder()
             .url(request.url)
             .method(request.method)
-            .headers(request.headers)
-            .queryItems(request.queryItems)
             .body(request.body)
-            .shouldCache(request.shouldCache)
-            .header(name: "Authorization", value: "Bearer \(accessToken)")
+        builder.headers = request.headers
+        builder.queryItems = request.queryItems
+        builder.shouldCache = request.shouldCache
+        builder.headers["Authorization"] = "Bearer \(accessToken)"
         return builder.build()
     }
 }
