@@ -1,32 +1,38 @@
 import SwiftUI
 
-/// A text field that shows an inline error message below when `error` is non-nil.
+/// A text or secure field with an inline error message below it.
 ///
 /// Usage:
 /// ```swift
 /// ValidatedTextField(
 ///     placeholder: "Email",
 ///     text: $email,
-///     error: viewModel.emailError,
-///     isSecure: false
+///     isSecure: false,
+///     error: emailError
 /// )
 /// ```
 public struct ValidatedTextField: View {
     private let placeholder: String
     @Binding private var text: String
-    private let error: String?
     private let isSecure: Bool
+    private let error: String?
+    private let contentType: UITextContentType?
+    private let keyboardType: UIKeyboardType
 
     public init(
         placeholder: String,
         text: Binding<String>,
+        isSecure: Bool = false,
         error: String? = nil,
-        isSecure: Bool = false
+        contentType: UITextContentType? = nil,
+        keyboardType: UIKeyboardType = .default
     ) {
         self.placeholder = placeholder
         self._text = text
-        self.error = error
         self.isSecure = isSecure
+        self.error = error
+        self.contentType = contentType
+        self.keyboardType = keyboardType
     }
 
     public var body: some View {
@@ -36,9 +42,12 @@ public struct ValidatedTextField: View {
                     SecureField(placeholder, text: $text)
                 } else {
                     TextField(placeholder, text: $text)
+                        .keyboardType(keyboardType)
                 }
             }
             .textFieldStyle(.roundedBorder)
+            .textContentType(contentType)
+            .autocapitalization(.none)
             .autocorrectionDisabled()
 
             if let error {
@@ -55,18 +64,12 @@ public struct ValidatedTextField: View {
 
 #Preview {
     VStack(spacing: 16) {
-        ValidatedTextField(
-            placeholder: "Email",
-            text: .constant(""),
-            error: "Enter a valid email address.",
-            isSecure: false
-        )
-
+        ValidatedTextField(placeholder: "Email", text: .constant(""))
         ValidatedTextField(
             placeholder: "Password",
-            text: .constant("secret"),
-            error: nil,
-            isSecure: true
+            text: .constant(""),
+            isSecure: true,
+            error: "This field is required."
         )
     }
     .padding()

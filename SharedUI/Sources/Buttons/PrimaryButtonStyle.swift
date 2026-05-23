@@ -1,27 +1,37 @@
 import SwiftUI
 
-/// A filled, full-width button style used for primary actions throughout the app.
+/// Full-width primary action button with an optional loading spinner.
 ///
 /// Usage:
 /// ```swift
 /// Button("Log in") { action() }
-///     .buttonStyle(PrimaryButtonStyle())
+///     .buttonStyle(PrimaryButtonStyle(isLoading: isLoading))
+///     .disabled(isLoading)
 /// ```
 public struct PrimaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
+    public let isLoading: Bool
 
-    public init() {}
+    public init(isLoading: Bool = false) {
+        self.isLoading = isLoading
+    }
 
     public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(isEnabled ? Color.accentColor : Color.secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .opacity(configuration.isPressed ? 0.8 : 1)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+        ZStack {
+            configuration.label
+                .font(.body.weight(.semibold))
+                .opacity(isLoading ? 0 : 1)
+            if isLoading {
+                ProgressView()
+                    .tint(.white)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(Color.accentColor)
+        .foregroundStyle(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .opacity(configuration.isPressed ? 0.8 : 1)
+        .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
@@ -29,11 +39,10 @@ public struct PrimaryButtonStyle: ButtonStyle {
 
 #Preview {
     VStack(spacing: 16) {
-        Button("Primary enabled") {}
+        Button("Log in") {}
             .buttonStyle(PrimaryButtonStyle())
-
-        Button("Primary disabled") {}
-            .buttonStyle(PrimaryButtonStyle())
+        Button("Logging in…") {}
+            .buttonStyle(PrimaryButtonStyle(isLoading: true))
             .disabled(true)
     }
     .padding()
