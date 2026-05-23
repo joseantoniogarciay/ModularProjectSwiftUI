@@ -1,5 +1,4 @@
 import Core
-import Pokemon
 import SwiftUI
 
 @main
@@ -12,7 +11,7 @@ struct ModularApp: App {
 
     var body: some Scene {
         WindowGroup {
-            PokemonListView(store: AppDependencies.shared.pokemonStore)
+            RootView(pokemonStore: AppDependencies.shared.pokemonStore)
                 .preferredColorScheme(themePreference.colorScheme)
         }
     }
