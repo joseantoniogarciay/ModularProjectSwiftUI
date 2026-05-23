@@ -1,0 +1,77 @@
+import Core
+import Foundation
+import Observation
+
+@Observable @MainActor
+public final class PokemonStore {
+
+    // MARK: - List state
+
+    public enum ListState { case idle, loading, loaded, error(PokemonListError) }
+
+    public private(set) var pokemons: [Pokemon] = []
+    public private(set) var listState: ListState = .idle
+    public private(set) var hasMore = true
+
+    // MARK: - Detail state (cached per ID)
+
+    public enum DetailState { case loading, loaded(PokemonDetail), error(PokemonDetailError) }
+
+    public private(set) var detailStates: [Int: DetailState] = [:]
+
+    // MARK: - Private
+
+    private static let pageSize = 20
+    private var currentOffset = 0
+    private let repository: any PokemonRepository
+
+    public init(repository: any PokemonRepository) {
+        self.repository = repository
+    }
+
+    // MARK: - List
+
+    public func loadFirstPage() async {
+        currentOffset = 0
+        pokemons = []
+        hasMore = true
+        listState = .loading
+        await fetchNextBatch()
+    }
+
+    public func loadMoreIfNeeded(currentItem: Pokemon) async {
+        guard hasMore, let last = pokemons.last, last.id == currentItem.id else { return }
+        guard case .loaded = listState else { return }
+        await fetchNextBatch()
+    }
+
+    private func fetchNextBatch() async {
+        listState = .loading
+        do {
+            let batch = try await repository.list(offset: currentOffset, limit: Self.pageSize)
+            pokemons.append(contentsOf: batch)
+            hasMore = batch.count == Self.pageSize
+            currentOffset += batch.count
+            listState = .loaded
+        } catch let e as PokemonListError {
+            listState = .error(e)
+        } catch {
+            listState = .error(.unknown(error))
+        }
+    }
+
+    // MARK: - Detail
+
+    public func loadDetail(id: Int) async {
+        if case .some(.loaded) = detailStates[id] { return }   // already cached
+        detailStates[id] = .loading
+        do {
+            let detail = try await repository.detail(id: id)
+            detailStates[id] = .loaded(detail)
+        } catch let e as PokemonDetailError {
+            detailStates[id] = .error(e)
+        } catch {
+            detailStates[id] = .error(.unknown(error))
+        }
+    }
+}
