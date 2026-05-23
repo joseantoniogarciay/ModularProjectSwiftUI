@@ -16,21 +16,16 @@ public final class AccountStore {
     /// Starts session restoration and begins observing auth state changes.
     /// Call this from `.task` on the root account view.
     public func start() async {
+        // Restore session first; authStates() immediately yields the post-restore state.
+        await session.restore()
         var previous: AuthState? = nil
-        await withTaskGroup(of: Void.self) { [self] group in
-            group.addTask { [self] in await self.session.restore() }
-            group.addTask { [self] in
-                for await state in self.session.authStates() {
-                    if case .anonymous(.sessionExpired) = state,
-                       case .authenticated(_)? = previous {
-                        self.sessionExpiredAlert = true
-                    }
-                    self.authState = state
-                    previous = state
-                }
+        for await state in session.authStates() {
+            if case .anonymous(.sessionExpired) = state,
+               case .authenticated = previous {
+                sessionExpiredAlert = true
             }
-            _ = await group.next()
-            group.cancelAll()
+            authState = state
+            previous = state
         }
     }
 

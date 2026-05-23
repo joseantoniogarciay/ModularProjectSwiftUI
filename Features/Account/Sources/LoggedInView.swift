@@ -67,7 +67,7 @@ struct LoggedInView: View {
             infoRow(label: CoreStrings.accountProfileIdLabel, value: user.id)
         }
         .padding(16)
-        .background(.secondarySystemGroupedBackground)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .accessibilityElement(children: .combine)
     }

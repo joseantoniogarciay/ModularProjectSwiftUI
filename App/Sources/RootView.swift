@@ -42,7 +42,8 @@ private struct PreviewPokemonRepository: PokemonRepository {
     }
 }
 
-private struct PreviewAccountSession: AuthSession {
+@MainActor
+private final class PreviewAccountSession: AuthSession {
     var authState: AuthState = .anonymous(.initial)
     func authStates() -> AsyncStream<AuthState> { AsyncStream { $0.yield(.anonymous(.initial)) } }
     func restore() async {}
