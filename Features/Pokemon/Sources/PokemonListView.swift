@@ -1,23 +1,56 @@
 import Core
 import SharedUI
 import SwiftUI
+import UserNotifications
 
 public struct PokemonListView: View {
-    var store: PokemonStore   // shared — @Observable tracks access automatically
+    var store: PokemonStore
+
+    /// Shared AppStorage key keeps theme in sync with ModularApp.
+    @AppStorage(ThemePreference.appStorageKey) private var themeRaw: String = ThemePreference.system.rawValue
+
+    private var themePreference: ThemePreference {
+        ThemePreference(rawValue: themeRaw) ?? .system
+    }
 
     public init(store: PokemonStore) {
         self.store = store
     }
 
+    // MARK: - Body
+
     public var body: some View {
         NavigationStack {
-            content
-                .navigationTitle("Pokémon")
+            Group { content }
+                .navigationTitle(CoreStrings.pokemonTitle)
+                .navigationDestination(for: Int.self) { id in
+                    PokemonDetailView(pokemonID: id, store: store)
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            themeRaw = themePreference.next.rawValue
+                        } label: {
+                            Image(systemName: themePreference.systemImageName)
+                        }
+                        .accessibilityLabel(CoreStrings.accessibilityChangeAppearance)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            Task { await scheduleMewtwoNotification() }
+                        } label: {
+                            Image(systemName: "bell.badge")
+                        }
+                        .accessibilityLabel(CoreStrings.accessibilityNotifyMe)
+                    }
+                }
                 .refreshable { await store.loadFirstPage() }
+                .background(SharedUIAsset.background.swiftUIColor)
         }
-        // Attached to NavigationStack so the task survives content-type changes.
         .task { await store.loadFirstPage() }
     }
+
+    // MARK: - Content
 
     @ViewBuilder
     private var content: some View {
@@ -25,31 +58,93 @@ public struct PokemonListView: View {
         case .idle, .loading where store.pokemons.isEmpty:
             LoadingView()
         case .error(let error) where store.pokemons.isEmpty:
-            RetryView(message: listErrorMessage(error)) {
+            RetryView(message: messageFor(error)) {
                 Task { await store.loadFirstPage() }
             }
+            .accessibilityIdentifier("pokemon.list.retry")
         default:
             pokemonList
         }
     }
 
+    // MARK: - List
+
     private var pokemonList: some View {
-        List(store.pokemons, id: \.id) { pokemon in
-            NavigationLink(value: pokemon.id) {
-                PokemonRowView(pokemon: pokemon)
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(store.pokemons, id: \.id) { pokemon in
+                    NavigationLink(value: pokemon.id) {
+                        PokemonRowView(pokemon: pokemon)
+                    }
+                    .buttonStyle(PokemonCardButtonStyle())
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .accessibilityIdentifier("pokemon.cell.\(pokemon.name.lowercased())")
+                    .accessibilityLabel("\(pokemon.name.capitalized), \(String(format: "#%03d", pokemon.id))")
+                    .task { await store.loadMoreIfNeeded(currentItem: pokemon) }
+                }
+                listFooter
             }
-            .task { await store.loadMoreIfNeeded(currentItem: pokemon) }
+            .padding(.vertical, 2)
         }
-        .navigationDestination(for: Int.self) { id in
-            PokemonDetailView(pokemonID: id, store: store)
+        .accessibilityIdentifier("pokemon.list.table")
+        .background(SharedUIAsset.background.swiftUIColor)
+    }
+
+    @ViewBuilder
+    private var listFooter: some View {
+        if let error = store.pageError {
+            // Inline retry — mirrors UIKit's RetryCell
+            VStack(spacing: 8) {
+                Text(messageFor(error))
+                    .font(.footnote)
+                    .foregroundStyle(SharedUIAsset.secondaryText.swiftUIColor)
+                    .multilineTextAlignment(.center)
+                Button(CoreStrings.retryButtonTitle) {
+                    Task { await store.retryPage() }
+                }
+                .font(.footnote)
+                .accessibilityIdentifier("pokemon.list.retry.button")
+            }
+            .padding()
+            .frame(maxWidth: .infinity, minHeight: 56)
+        } else if store.hasMore {
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .accessibilityIdentifier("pokemon.list.loading")
         }
     }
 
-    private func listErrorMessage(_ error: PokemonListError) -> String {
+    // MARK: - Helpers
+
+    private func messageFor(_ error: PokemonListError) -> String {
         switch error {
-        case .noConnection: return "No internet connection."
-        case .unknown: return "Something went wrong."
+        case .noConnection: return CoreStrings.errorNoConnection
+        case .unknown:      return CoreStrings.errorGenericLoading
         }
+    }
+
+    // MARK: - Notifications
+
+    private func scheduleMewtwoNotification() async {
+        let center = UNUserNotificationCenter.current()
+        do {
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            guard granted else { return }
+        } catch { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "A wild Pokémon appears"
+        content.body  = "Tap to meet #151."
+        content.sound = .default
+        content.userInfo = ["pokemon_id": 151]
+
+        let request = UNNotificationRequest(
+            identifier: "pokemon.detail.151",
+            content: content,
+            trigger: nil
+        )
+        try? await center.add(request)
     }
 }
 

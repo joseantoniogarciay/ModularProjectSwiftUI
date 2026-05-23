@@ -5,20 +5,63 @@ import SwiftUI
 struct PokemonRowView: View {
     let pokemon: Pokemon
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             RemoteImage(url: pokemon.imageURL)
-                .frame(width: 56, height: 56)
+                .frame(width: 72, height: 72)
+                .accessibilityHidden(true)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(pokemon.name.capitalized)
                     .font(.headline)
-                Text("#\(pokemon.id)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text(String(format: "#%03d", pokemon.id))
+                    .font(.caption)
+                    .foregroundStyle(SharedUIAsset.secondaryText.swiftUIColor)
             }
+
             Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(Font.caption.weight(.semibold))
+                .foregroundStyle(SharedUIAsset.secondaryText.swiftUIColor)
+                .accessibilityHidden(true)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(cardBackground)
+    }
+
+    @ViewBuilder
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(SharedUIAsset.cardBackground.swiftUIColor)
+            .shadow(
+                color: colorScheme == .dark ? .clear : .black.opacity(0.09),
+                radius: 10, x: 0, y: 3
+            )
+            .overlay {
+                if colorScheme == .dark {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 0.5)
+                }
+            }
+    }
+}
+
+// MARK: - Button style
+
+/// Replicates UIKit PokemonCell.setHighlighted: scale 0.97 + alpha 0.75 on press.
+/// Skips the transform (but keeps alpha) when Reduce Motion is enabled.
+struct PokemonCardButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1.0)
+            .opacity(configuration.isPressed ? 0.75 : 1.0)
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
@@ -30,5 +73,6 @@ struct PokemonRowView: View {
         name: "pikachu",
         imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")
     ))
-    .padding()
+    .padding(.horizontal, 16)
+    .padding(.vertical, 6)
 }

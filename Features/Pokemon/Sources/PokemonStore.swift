@@ -12,6 +12,9 @@ public final class PokemonStore {
     public private(set) var pokemons: [Pokemon] = []
     public private(set) var listState: ListState = .idle
     public private(set) var hasMore = true
+    /// Non-nil when a paginated fetch fails after the first page has already loaded.
+    /// The list remains visible; only the bottom loader shows the inline retry.
+    public private(set) var pageError: PokemonListError? = nil
 
     // MARK: - Detail state (cached per ID)
 
@@ -21,7 +24,7 @@ public final class PokemonStore {
 
     // MARK: - Private
 
-    private static let pageSize = 20
+    private static let pageSize = 30
     private var currentOffset = 0
     private let repository: any PokemonRepository
 
@@ -35,13 +38,19 @@ public final class PokemonStore {
         currentOffset = 0
         pokemons = []
         hasMore = true
+        pageError = nil
         listState = .loading
         await fetchNextBatch()
     }
 
     public func loadMoreIfNeeded(currentItem: Pokemon) async {
-        guard hasMore, let last = pokemons.last, last.id == currentItem.id else { return }
+        guard hasMore, pageError == nil, let last = pokemons.last, last.id == currentItem.id else { return }
         guard case .loaded = listState else { return }
+        await fetchNextBatch()
+    }
+
+    public func retryPage() async {
+        pageError = nil
         await fetchNextBatch()
     }
 
@@ -52,11 +61,22 @@ public final class PokemonStore {
             pokemons.append(contentsOf: batch)
             hasMore = batch.count == Self.pageSize
             currentOffset += batch.count
+            pageError = nil
             listState = .loaded
         } catch let e as PokemonListError {
-            listState = .error(e)
+            if pokemons.isEmpty {
+                listState = .error(e)
+            } else {
+                pageError = e
+                listState = .loaded
+            }
         } catch {
-            listState = .error(.unknown(error))
+            if pokemons.isEmpty {
+                listState = .error(.unknown(error))
+            } else {
+                pageError = .unknown(error)
+                listState = .loaded
+            }
         }
     }
 
