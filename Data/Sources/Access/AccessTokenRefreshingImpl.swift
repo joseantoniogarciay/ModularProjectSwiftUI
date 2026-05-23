@@ -21,6 +21,7 @@ public struct AccessTokenRefreshingImpl: AccessTokenRefreshing {
             )
             .method(.post)
             .body(.json(body))
+            .shouldCache(false)
             .build()
         do {
             let response: FreeAPIEnvelope<RefreshDataDTO> = try await client.request(request)

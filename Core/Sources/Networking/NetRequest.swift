@@ -44,6 +44,7 @@ public struct NetRequest: Sendable {
             queryItems.append(URLQueryItem(name: name, value: value)); return self
         }
         @discardableResult public func body(_ body: Body?) -> Self { self.body = body; return self }
+        @discardableResult public func shouldCache(_ shouldCache: Bool) -> Self { self.shouldCache = shouldCache; return self }
 
         public func build() -> NetRequest { NetRequest(builder: self) }
     }

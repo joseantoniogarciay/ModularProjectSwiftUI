@@ -19,6 +19,7 @@ public struct UserRepositoryImpl: UserRepository {
                     .absoluteString
             )
             .method(.get)
+            .shouldCache(false)
             .build()
         do {
             let response: FreeAPIEnvelope<UserDTO> = try await client.request(request)

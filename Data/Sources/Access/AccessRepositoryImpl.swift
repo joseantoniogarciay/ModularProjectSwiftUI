@@ -26,6 +26,7 @@ public struct AccessRepositoryImpl: AccessRepository {
             )
             .method(.post)
             .body(.json(body))
+            .shouldCache(false)
             .build()
         do {
             let response: FreeAPIEnvelope<LoginDataDTO> = try await client.request(request)
@@ -57,6 +58,7 @@ public struct AccessRepositoryImpl: AccessRepository {
             )
             .method(.post)
             .body(.json(body))
+            .shouldCache(false)
             .build()
         do {
             let response: FreeAPIEnvelope<RegisterDataDTO> = try await client.request(request)
