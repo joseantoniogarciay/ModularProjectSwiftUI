@@ -113,7 +113,8 @@ public struct AlamofireNetClient: NetClient {
         guard let baseURL = URL(string: request.url) else { throw NetError.invalidURL }
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
         if !request.queryItems.isEmpty {
-            components?.queryItems = (components?.queryItems ?? []) + request.queryItems
+            let existing = components?.queryItems ?? []
+            components?.queryItems = existing + request.queryItems
         }
         guard let url = components?.url else { throw NetError.invalidURL }
 
