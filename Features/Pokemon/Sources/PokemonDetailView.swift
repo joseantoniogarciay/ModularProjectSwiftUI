@@ -4,12 +4,18 @@ import SwiftUI
 import UIKit  // for UIColor luminance calculation
 
 public struct PokemonDetailView: View {
-    let pokemonID: Int
-    var store: PokemonStore
+    /// The list-level model — available immediately on push, so the navigation
+    /// title shows the Pokémon name before the detail request completes.
+    /// This mirrors UIKit's PokemonCoordinator passing a full `Pokemon` to
+    /// `PokemonDetailViewController` rather than just an id.
+    let pokemon: Pokemon
+    let store: PokemonStore
 
     @Environment(\.colorScheme) private var colorScheme
+    /// Scales with Dynamic Type so the illustration stays proportional at larger categories.
+    @ScaledMetric(relativeTo: .body) private var spriteSize: CGFloat = 200
 
-    private var detailState: PokemonStore.DetailState? { store.detailStates[pokemonID] }
+    private var detailState: PokemonStore.DetailState? { store.detailStates[pokemon.id] }
 
     public var body: some View {
         Group {
@@ -22,16 +28,16 @@ public struct PokemonDetailView: View {
                     .accessibilityIdentifier("pokemon.detail.loading")
             case .some(.error(let error)):
                 RetryView(message: messageFor(error)) {
-                    Task { await store.loadDetail(id: pokemonID) }
+                    Task { await store.loadDetail(id: pokemon.id) }
                 }
                 .accessibilityIdentifier("pokemon.detail.retry")
             case .some(.loaded(let detail)):
                 detailContent(detail)
             }
         }
-        .navigationTitle(navigationTitle)
+        .navigationTitle(pokemon.name.capitalized)
         .navigationBarTitleDisplayMode(.inline)
-        .task { await store.loadDetail(id: pokemonID) }
+        .task { await store.loadDetail(id: pokemon.id) }
     }
 
     // MARK: - Detail content
@@ -41,7 +47,7 @@ public struct PokemonDetailView: View {
         ScrollView {
             VStack(spacing: 16) {
                 RemoteImage(url: pokemon.imageURL)
-                    .frame(width: 200, height: 200)
+                    .frame(width: spriteSize, height: spriteSize)
                     .accessibilityHidden(true)
 
                 // Type badges — full color, WCAG text
@@ -121,8 +127,7 @@ public struct PokemonDetailView: View {
     // MARK: - Stat row
 
     private func statRow(_ stat: PokemonStat) -> some View {
-        let ratio = max(0.01, min(CGFloat(stat.baseValue) / 255.0, 1.0))
-        return VStack(spacing: 8) {
+        VStack(spacing: 8) {
             HStack {
                 Text(displayName(for: stat.name))
                     .font(.caption)
@@ -132,22 +137,35 @@ public struct PokemonDetailView: View {
                     .font(.caption)
                     .foregroundStyle(SharedUIAsset.secondaryText.swiftUIColor)
             }
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(SharedUIAsset.statTrack.swiftUIColor)
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(barColor(for: stat.baseValue))
-                        .frame(width: geo.size.width * ratio)
-                }
-                .frame(height: 6)
-            }
-            .frame(height: 6)
+            ProgressView(value: Double(stat.baseValue), total: 255)
+                .progressViewStyle(StatBarStyle(color: barColor(for: stat.baseValue)))
         }
         .padding(10)
         .background(cardBackground(cornerRadius: 10))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(displayName(for: stat.name)), \(stat.baseValue)")
+    }
+
+    // MARK: - Stat bar style
+
+    /// A linear progress bar that fills left-to-right using the track and fill colors from
+    /// SharedUIAsset. Encapsulates the GeometryReader so callers use the semantic ProgressView API.
+    private struct StatBarStyle: ProgressViewStyle {
+        let color: Color
+
+        func makeBody(configuration: Configuration) -> some View {
+            let fraction = CGFloat(configuration.fractionCompleted ?? 0)
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(SharedUIAsset.statTrack.swiftUIColor)
+                GeometryReader { geo in
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(color)
+                        .frame(width: geo.size.width * fraction)
+                }
+            }
+            .frame(height: 6)
+        }
     }
 
     // MARK: - Card background (shadow in light / border in dark)
@@ -165,13 +183,6 @@ public struct PokemonDetailView: View {
                         .stroke(Color.white.opacity(0.14), lineWidth: 0.5)
                 }
             }
-    }
-
-    // MARK: - Navigation title
-
-    private var navigationTitle: String {
-        if case .some(.loaded(let d)) = detailState { return d.name.capitalized }
-        return "Pokémon"
     }
 
     // MARK: - Error message
@@ -279,14 +290,19 @@ private struct ErrorDetailRepository: PokemonRepository {
     }
 }
 
+private let previewPikachu = Pokemon(
+    id: 25, name: "pikachu",
+    imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")
+)
+
 #Preview("Detail – loaded") {
     NavigationStack {
-        PokemonDetailView(pokemonID: 25, store: PokemonStore(repository: PreviewDetailRepository()))
+        PokemonDetailView(pokemon: previewPikachu, store: PokemonStore(repository: PreviewDetailRepository()))
     }
 }
 
 #Preview("Detail – error") {
     NavigationStack {
-        PokemonDetailView(pokemonID: 25, store: PokemonStore(repository: ErrorDetailRepository()))
+        PokemonDetailView(pokemon: previewPikachu, store: PokemonStore(repository: ErrorDetailRepository()))
     }
 }

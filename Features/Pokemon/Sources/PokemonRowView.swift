@@ -6,11 +6,13 @@ struct PokemonRowView: View {
     let pokemon: Pokemon
 
     @Environment(\.colorScheme) private var colorScheme
+    /// Scales with Dynamic Type so the sprite stays visually proportional to the name/number text.
+    @ScaledMetric(relativeTo: .body) private var spriteSize: CGFloat = 72
 
     var body: some View {
         HStack(spacing: 14) {
             RemoteImage(url: pokemon.imageURL)
-                .frame(width: 72, height: 72)
+                .frame(width: spriteSize, height: spriteSize)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {

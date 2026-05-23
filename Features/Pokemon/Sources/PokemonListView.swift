@@ -4,7 +4,7 @@ import SwiftUI
 import UserNotifications
 
 public struct PokemonListView: View {
-    var store: PokemonStore
+    let store: PokemonStore
 
     /// Shared AppStorage key keeps theme in sync with ModularApp.
     @AppStorage(ThemePreference.appStorageKey) private var themeRaw: String = ThemePreference.system.rawValue
@@ -20,34 +20,30 @@ public struct PokemonListView: View {
     // MARK: - Body
 
     public var body: some View {
-        NavigationStack {
-            Group { content }
-                .navigationTitle(CoreStrings.pokemonTitle)
-                .navigationDestination(for: Int.self) { id in
-                    PokemonDetailView(pokemonID: id, store: store)
-                }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            themeRaw = themePreference.next.rawValue
-                        } label: {
-                            Image(systemName: themePreference.systemImageName)
-                        }
-                        .accessibilityLabel(CoreStrings.accessibilityChangeAppearance)
+        Group { content }
+            .toolbar {
+                // Bell first → leftmost; theme second → rightmost. Matches UIKit's
+                // rightBarButtonItems = [themeButton, notificationButton] where index 0 is trailing-most.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task { await scheduleMewtwoNotification() }
+                    } label: {
+                        Image(systemName: "bell.badge")
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            Task { await scheduleMewtwoNotification() }
-                        } label: {
-                            Image(systemName: "bell.badge")
-                        }
-                        .accessibilityLabel(CoreStrings.accessibilityNotifyMe)
-                    }
+                    .accessibilityLabel(CoreStrings.accessibilityNotifyMe)
                 }
-                .refreshable { await store.loadFirstPage() }
-                .background(SharedUIAsset.background.swiftUIColor)
-        }
-        .task { await store.loadFirstPage() }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        themeRaw = themePreference.next.rawValue
+                    } label: {
+                        Image(systemName: themePreference.systemImageName)
+                    }
+                    .accessibilityLabel(CoreStrings.accessibilityChangeAppearance)
+                }
+            }
+            .refreshable { await store.loadFirstPage() }
+            .background(SharedUIAsset.background.swiftUIColor)
+            .task { await store.loadFirstPage() }
     }
 
     // MARK: - Content
@@ -55,7 +51,9 @@ public struct PokemonListView: View {
     @ViewBuilder
     private var content: some View {
         switch store.listState {
-        case .idle, .loading where store.pokemons.isEmpty:
+        case .idle:
+            LoadingView()
+        case .loading where store.pokemons.isEmpty:
             LoadingView()
         case .error(let error) where store.pokemons.isEmpty:
             RetryView(message: messageFor(error)) {
@@ -73,7 +71,7 @@ public struct PokemonListView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(store.pokemons, id: \.id) { pokemon in
-                    NavigationLink(value: pokemon.id) {
+                    NavigationLink(value: pokemon) {
                         PokemonRowView(pokemon: pokemon)
                     }
                     .buttonStyle(PokemonCardButtonStyle())
@@ -111,6 +109,7 @@ public struct PokemonListView: View {
         } else if store.hasMore {
             ProgressView()
                 .frame(maxWidth: .infinity, minHeight: 56)
+                .accessibilityLabel("Loading more Pokémon")
                 .accessibilityIdentifier("pokemon.list.loading")
         }
     }
@@ -175,9 +174,13 @@ private struct ErrorRepository: PokemonRepository {
 }
 
 #Preview("List – loaded") {
-    PokemonListView(store: PokemonStore(repository: PreviewRepository()))
+    NavigationStack {
+        PokemonListView(store: PokemonStore(repository: PreviewRepository()))
+    }
 }
 
 #Preview("List – error") {
-    PokemonListView(store: PokemonStore(repository: ErrorRepository()))
+    NavigationStack {
+        PokemonListView(store: PokemonStore(repository: ErrorRepository()))
+    }
 }

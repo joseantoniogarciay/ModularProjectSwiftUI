@@ -63,18 +63,12 @@ public final class PokemonStore {
             currentOffset += batch.count
             pageError = nil
             listState = .loaded
-        } catch let e as PokemonListError {
-            if pokemons.isEmpty {
-                listState = .error(e)
-            } else {
-                pageError = e
-                listState = .loaded
-            }
         } catch {
+            // Typed throws: `error` is already `PokemonListError` — no cast needed.
             if pokemons.isEmpty {
-                listState = .error(.unknown(error))
+                listState = .error(error)
             } else {
-                pageError = .unknown(error)
+                pageError = error
                 listState = .loaded
             }
         }
@@ -88,10 +82,9 @@ public final class PokemonStore {
         do {
             let detail = try await repository.detail(id: id)
             detailStates[id] = .loaded(detail)
-        } catch let e as PokemonDetailError {
-            detailStates[id] = .error(e)
         } catch {
-            detailStates[id] = .error(.unknown(error))
+            // Typed throws: `error` is already `PokemonDetailError` — no cast needed.
+            detailStates[id] = .error(error)
         }
     }
 }
