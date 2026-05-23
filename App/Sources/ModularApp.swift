@@ -3,6 +3,10 @@ import SwiftUI
 
 @main
 struct ModularApp: App {
+    #if DEV
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
+
     @AppStorage(ThemePreference.appStorageKey) private var themeRaw: String = ThemePreference.system.rawValue
 
     private var themePreference: ThemePreference {
