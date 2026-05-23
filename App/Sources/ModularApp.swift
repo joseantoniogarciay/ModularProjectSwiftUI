@@ -15,8 +15,11 @@ struct ModularApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(pokemonStore: AppDependencies.shared.pokemonStore)
-                .preferredColorScheme(themePreference.colorScheme)
+            RootView(
+                pokemonStore: AppDependencies.shared.pokemonStore,
+                accountStore: AppDependencies.shared.accountStore
+            )
+            .preferredColorScheme(themePreference.colorScheme)
         }
     }
 }

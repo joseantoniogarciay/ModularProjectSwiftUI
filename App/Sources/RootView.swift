@@ -1,3 +1,4 @@
+import Account
 import Core
 import Pokemon
 import SwiftUI
@@ -5,9 +6,10 @@ import SwiftUI
 /// App root view — mirrors `AppRootCoordinator` / `UITabBarController` from the UIKit project.
 ///
 /// Hosts one tab per feature. Navigation within each tab is owned by its flow view
-/// (e.g. `PokemonFlowView`), which plays the role of the UIKit coordinator.
+/// (e.g. `PokemonFlowView`, `AccountFlowView`), which plays the role of the UIKit coordinator.
 struct RootView: View {
     let pokemonStore: PokemonStore
+    let accountStore: AccountStore
 
     var body: some View {
         TabView {
@@ -16,29 +18,10 @@ struct RootView: View {
                     Label(CoreStrings.pokemonTitle, systemImage: "list.bullet")
                 }
 
-            AccountPlaceholderView()
+            AccountFlowView(store: accountStore)
                 .tabItem {
                     Label(CoreStrings.accountTitle, systemImage: "person.crop.circle")
                 }
-        }
-        // Tab tint defaults to the system accent colour.
-        // Add a SharedUIAsset.accent colour asset to SharedUI/Resources if a custom brand colour is needed.
-    }
-}
-
-// MARK: - Account placeholder
-
-/// Temporary placeholder until the Account feature is ported to SwiftUI.
-private struct AccountPlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(
-                CoreStrings.accountTitle,
-                systemImage: "person.crop.circle",
-                description: Text("Coming soon")
-            )
-            .navigationTitle(CoreStrings.accountTitle)
-            .navigationBarTitleDisplayMode(.large)
         }
     }
 }
@@ -46,16 +29,26 @@ private struct AccountPlaceholderView: View {
 // MARK: - Preview
 
 #Preview {
-    RootView(pokemonStore: PokemonStore(repository: PreviewRepository()))
+    RootView(
+        pokemonStore: PokemonStore(repository: PreviewPokemonRepository()),
+        accountStore: AccountStore(session: PreviewAccountSession())
+    )
 }
 
-private struct PreviewRepository: PokemonRepository {
-    func list(offset: Int, limit: Int) async throws(PokemonListError) -> [Pokemon] {
-        [
-            Pokemon(id: 1, name: "bulbasaur", imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png")),
-        ]
-    }
+private struct PreviewPokemonRepository: PokemonRepository {
+    func list(offset: Int, limit: Int) async throws(PokemonListError) -> [Pokemon] { [] }
     func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
         throw PokemonDetailError.unknown(URLError(.unknown))
     }
+}
+
+private struct PreviewAccountSession: AuthSession {
+    var authState: AuthState = .anonymous(.initial)
+    func authStates() -> AsyncStream<AuthState> { AsyncStream { $0.yield(.anonymous(.initial)) } }
+    func restore() async {}
+    func login(identifier: String, password: String) async throws(LoginError) {}
+    func register(username: String, email: String, password: String) async throws(SignUpError) {}
+    func refreshCurrentUser() async throws(CurrentUserError) {}
+    func logout() async {}
+    func expireSession() async {}
 }

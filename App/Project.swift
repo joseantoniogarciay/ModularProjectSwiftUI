@@ -7,6 +7,7 @@ private let baseAppDependencies: [TargetDependency] = [
     .project(target: "Data", path: "../Data"),
     .project(target: "SharedUI", path: "../SharedUI"),
     .project(target: "Pokemon", path: "../Features/Pokemon"),
+    .project(target: "Account", path: "../Features/Account"),
     .external(name: "Kingfisher"),
 ]
 
