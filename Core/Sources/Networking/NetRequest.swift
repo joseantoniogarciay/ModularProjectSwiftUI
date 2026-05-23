@@ -37,15 +37,56 @@ public struct NetRequest: Sendable {
 
         public init() {}
 
-        @discardableResult public func url(_ url: String) -> Self { self.url = url; return self }
-        @discardableResult public func method(_ method: HTTPMethod) -> Self { self.method = method; return self }
-        @discardableResult public func header(name: String, value: String) -> Self { headers[name] = value; return self }
-        @discardableResult public func queryItem(name: String, value: String?) -> Self {
-            queryItems.append(URLQueryItem(name: name, value: value)); return self
+        @discardableResult
+        public func url(_ url: String) -> Self {
+            self.url = url
+            return self
         }
-        @discardableResult public func body(_ body: Body?) -> Self { self.body = body; return self }
-        @discardableResult public func shouldCache(_ shouldCache: Bool) -> Self { self.shouldCache = shouldCache; return self }
 
-        public func build() -> NetRequest { NetRequest(builder: self) }
+        @discardableResult
+        public func method(_ method: HTTPMethod) -> Self {
+            self.method = method
+            return self
+        }
+
+        @discardableResult
+        public func header(name: String, value: String) -> Self {
+            self.headers[name] = value
+            return self
+        }
+
+        @discardableResult
+        public func headers(_ headers: [String: String]) -> Self {
+            self.headers = headers
+            return self
+        }
+
+        @discardableResult
+        public func queryItem(name: String, value: String?) -> Self {
+            self.queryItems.append(URLQueryItem(name: name, value: value))
+            return self
+        }
+
+        @discardableResult
+        public func queryItems(_ items: [URLQueryItem]) -> Self {
+            self.queryItems = items
+            return self
+        }
+
+        @discardableResult
+        public func body(_ body: Body?) -> Self {
+            self.body = body
+            return self
+        }
+
+        @discardableResult
+        public func shouldCache(_ value: Bool) -> Self {
+            self.shouldCache = value
+            return self
+        }
+
+        public func build() -> NetRequest {
+            NetRequest(builder: self)
+        }
     }
 }

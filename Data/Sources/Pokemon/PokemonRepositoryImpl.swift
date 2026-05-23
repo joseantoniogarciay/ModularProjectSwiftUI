@@ -18,8 +18,8 @@ public struct PokemonRepositoryImpl: PokemonRepository {
             .queryItem(name: "limit", value: String(limit))
             .build()
         do {
-            let dto: PokemonListDTO = try await client.request(request)
-            return dto.results.compactMap { $0.toDomain() }
+            let response: PokemonListDTO = try await client.request(request)
+            return response.results.compactMap { $0.toDomain() }
         } catch let error as NetError {
             if case .noConnection = error { throw .noConnection }
             throw .unknown(error)
@@ -30,12 +30,17 @@ public struct PokemonRepositoryImpl: PokemonRepository {
 
     public func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
         let request = NetRequest.Builder()
-            .url(baseURL.appendingPathComponent("pokemon").appendingPathComponent("\(id)").absoluteString)
+            .url(
+                baseURL
+                    .appendingPathComponent("pokemon")
+                    .appendingPathComponent("\(id)")
+                    .absoluteString
+            )
             .method(.get)
             .build()
         do {
-            let dto: PokemonDetailDTO = try await client.request(request)
-            return dto.toDomain()
+            let response: PokemonDetailDTO = try await client.request(request)
+            return response.toDomain()
         } catch let error as NetError {
             if case .noConnection = error { throw .noConnection }
             throw .unknown(error)

@@ -16,7 +16,9 @@ struct DecodableSerializer<T: Decodable & Sendable>: ResponseSerializer {
         data: Data?,
         error: (any Error)?
     ) throws -> T {
-        if let error { throw error }
+        if let error {
+            throw error
+        }
         guard let data else {
             throw AFError.responseSerializationFailed(reason: .inputDataNilOrZeroLength)
         }

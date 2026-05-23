@@ -10,13 +10,21 @@ public struct PokemonDetail: Sendable {
     public let stats: [PokemonStat]
 
     public init(
-        id: Int, name: String, imageURL: URL?,
-        types: [String], heightDecimetres: Int,
-        weightHectograms: Int, stats: [PokemonStat]
+        id: Int,
+        name: String,
+        imageURL: URL?,
+        types: [String],
+        heightDecimetres: Int,
+        weightHectograms: Int,
+        stats: [PokemonStat]
     ) {
-        self.id = id; self.name = name; self.imageURL = imageURL
-        self.types = types; self.heightDecimetres = heightDecimetres
-        self.weightHectograms = weightHectograms; self.stats = stats
+        self.id = id
+        self.name = name
+        self.imageURL = imageURL
+        self.types = types
+        self.heightDecimetres = heightDecimetres
+        self.weightHectograms = weightHectograms
+        self.stats = stats
     }
 }
 
