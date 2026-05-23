@@ -21,18 +21,21 @@ public struct PokemonListView: View {
 
     public var body: some View {
         Group { content }
+            .navigationTitle(CoreStrings.pokemonTitle)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                // ToolbarItemGroup treats both buttons as a single unit so they appear
+                // in the same animation frame when returning from the detail.
                 // Bell first → leftmost; theme second → rightmost. Matches UIKit's
                 // rightBarButtonItems = [themeButton, notificationButton] where index 0 is trailing-most.
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
                         Task { await scheduleMewtwoNotification() }
                     } label: {
                         Image(systemName: "bell.badge")
                     }
                     .accessibilityLabel(CoreStrings.accessibilityNotifyMe)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
+
                     Button {
                         themeRaw = themePreference.next.rawValue
                     } label: {
