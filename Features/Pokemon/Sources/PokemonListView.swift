@@ -21,8 +21,7 @@ public struct PokemonListView: View {
 
     public var body: some View {
         Group { content }
-            .navigationTitle(CoreStrings.pokemonTitle)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // ToolbarItemGroup treats both buttons as a single unit so they appear
                 // in the same animation frame when returning from the detail.
@@ -46,7 +45,7 @@ public struct PokemonListView: View {
             }
             .refreshable { await store.loadFirstPage() }
             .background(SharedUIAsset.background.swiftUIColor)
-            .task { await store.loadFirstPage() }
+            .task { await store.loadPokemonsIfNeeded() }
     }
 
     // MARK: - Content
@@ -71,23 +70,29 @@ public struct PokemonListView: View {
     // MARK: - List
 
     private var pokemonList: some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(store.pokemons, id: \.id) { pokemon in
-                    NavigationLink(value: pokemon) {
-                        PokemonRowView(pokemon: pokemon)
-                    }
-                    .buttonStyle(PokemonCardButtonStyle())
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
-                    .accessibilityIdentifier("pokemon.cell.\(pokemon.name.lowercased())")
-                    .accessibilityLabel("\(pokemon.name.capitalized), \(String(format: "#%03d", pokemon.id))")
-                    .task { await store.loadMoreIfNeeded(currentItem: pokemon) }
+        // List uses UITableView under the hood → true cell reuse.
+        // ScrollView+LazyVStack creates/destroys cells on every scroll-in/out,
+        // which forces layout + shadow compositing for each cell appearance.
+        List {
+            ForEach(store.pokemons, id: \.id) { pokemon in
+                NavigationLink(value: pokemon) {
+                    PokemonRowView(pokemon: pokemon)
                 }
-                listFooter
+                .buttonStyle(PokemonCardButtonStyle())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .accessibilityIdentifier("pokemon.cell.\(pokemon.name.lowercased())")
+                .accessibilityLabel("\(pokemon.name.capitalized), \(String(format: "#%03d", pokemon.id))")
+                .task { await store.loadMoreIfNeeded(currentItem: pokemon) }
             }
-            .padding(.vertical, 2)
+            listFooter
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .accessibilityIdentifier("pokemon.list.table")
         .background(SharedUIAsset.background.swiftUIColor)
     }
