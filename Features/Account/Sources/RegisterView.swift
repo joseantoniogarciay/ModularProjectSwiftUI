@@ -22,6 +22,12 @@ struct RegisterView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 32) {
+                SharedUIAsset.logo.swiftUIImage
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 64)
+                    .accessibilityHidden(true)
+
                 // Header
                 VStack(spacing: 8) {
                     Text(CoreStrings.accountRegisterScreenTitle)
