@@ -2,10 +2,14 @@ import Core
 import SharedUI
 import SwiftUI
 
-struct CartView: View {
+public struct CartView: View {
     @State var store: CartStore
     @Environment(\.openURL) private var openURL
     @Environment(\.bannerPresenter) private var bannerPresenter
+
+    public init(store: CartStore) {
+        self._store = State(initialValue: store)
+    }
 
     private static let priceFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -14,7 +18,7 @@ struct CartView: View {
         return formatter
     }()
 
-    var body: some View {
+    public var body: some View {
         Group {
             switch store.viewState {
             case .loading:
@@ -24,16 +28,20 @@ struct CartView: View {
                 errorView(for: error)
             case .loaded:
                 if store.cart.items.isEmpty {
-                    ContentUnavailableView(
-                        CoreStrings.cartEmpty,
-                        systemImage: "cart"
-                    )
+                    Text(CoreStrings.cartEmpty)
+                        .font(.body)
+                        .foregroundStyle(SharedUIAsset.secondaryText.swiftUIColor)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(.horizontal, 20)
                 } else {
                     loadedContent
                 }
             }
         }
+        .background(SharedUIAsset.background.swiftUIColor.ignoresSafeArea())
         .navigationTitle(CoreStrings.cartScreenTitle)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
         .task { await store.load() }
         .alert(
@@ -74,7 +82,7 @@ struct CartView: View {
                     }
                 }
             }
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(SharedUIAsset.cardBackground.swiftUIColor)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .padding(.horizontal, 24)
             .padding(.top, 24)
@@ -96,7 +104,7 @@ struct CartView: View {
             .font(.headline)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(SharedUIAsset.cardBackground.swiftUIColor)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
@@ -125,6 +133,12 @@ struct CartView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
+            Button(CoreStrings.cartSimulateExpireButton) {
+                Task { await store.simulateExpiration() }
+            }
+            .tint(.red)
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
             if store.isAddingItem {
                 ProgressView()
             } else {
@@ -134,12 +148,6 @@ struct CartView: View {
                     Image(systemName: "plus")
                 }
             }
-        }
-        ToolbarItem(placement: .navigationBarTrailing) {
-            Button(CoreStrings.cartSimulateExpireButton) {
-                Task { await store.simulateExpiration() }
-            }
-            .tint(.red)
         }
     }
 }

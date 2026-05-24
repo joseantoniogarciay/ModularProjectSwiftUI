@@ -18,45 +18,48 @@ struct LoggedOutView: View {
     @Environment(\.bannerPresenter) private var bannerPresenter
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
-                SharedUIAsset.logo.swiftUIImage
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 64, height: 64)
-                    .accessibilityHidden(true)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    SharedUIAsset.logo.swiftUIImage
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 64, height: 64)
+                        .accessibilityHidden(true)
+                        .padding(.bottom, 40)
 
-                // Header
-                VStack(spacing: 8) {
-                    Text(CoreStrings.accountLoggedOutTitle)
-                        .font(.largeTitle.bold())
-                        .multilineTextAlignment(.center)
-                        .accessibilityAddTraits(.isHeader)
-                    Text(CoreStrings.accountLoggedOutSubtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
+                    // Header
+                    VStack(spacing: 8) {
+                        Text(CoreStrings.accountLoggedOutTitle)
+                            .font(.largeTitle)
+                            .multilineTextAlignment(.center)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(CoreStrings.accountLoggedOutSubtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.bottom, 32)
 
-                // Fields
-                VStack(spacing: 8) {
-                    ValidatedTextField(
-                        placeholder: CoreStrings.accountUsernameOrEmailPlaceholder,
-                        text: $identifier,
-                        error: identifierError,
-                        contentType: .username
-                    )
-                    ValidatedTextField(
-                        placeholder: CoreStrings.accountPasswordPlaceholder,
-                        text: $password,
-                        isSecure: true,
-                        error: passwordError,
-                        contentType: .password
-                    )
-                }
+                    // Fields
+                    VStack(spacing: 8) {
+                        ValidatedTextField(
+                            placeholder: CoreStrings.accountUsernameOrEmailPlaceholder,
+                            text: $identifier,
+                            error: identifierError,
+                            contentType: .username
+                        )
+                        ValidatedTextField(
+                            placeholder: CoreStrings.accountPasswordPlaceholder,
+                            text: $password,
+                            isSecure: true,
+                            error: passwordError,
+                            contentType: .password
+                        )
+                    }
+                    .padding(.bottom, 24)
 
-                // Actions
-                VStack(spacing: 16) {
+                    // Actions
                     Button(CoreStrings.accountLoginButton) {
                         Task { await loginTapped() }
                     }
@@ -70,11 +73,15 @@ struct LoggedOutView: View {
                         }
                         .font(.subheadline)
                     }
+                    .padding(.top, 24)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .frame(minHeight: proxy.size.height)
             }
-            .padding(24)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
+        .background(SharedUIAsset.background.swiftUIColor.ignoresSafeArea())
     }
 
     private func loginTapped() async {
