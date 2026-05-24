@@ -20,6 +20,7 @@ private let devAppDependencies: [TargetDependency] = baseAppDependencies + [
 private func infoPlist(displayName: String) -> [String: Plist.Value] {
     [
         "CFBundleDisplayName": .string(displayName),
+        "CFBundleLocalizations": .array([.string("en"), .string("es")]),
         "UILaunchScreen": .dictionary([:]),
         "UIApplicationSupportsIndirectInputEvents": .boolean(true),
     ]
