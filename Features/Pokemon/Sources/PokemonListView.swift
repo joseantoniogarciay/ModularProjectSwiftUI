@@ -1,10 +1,13 @@
 import Core
 import SharedUI
 import SwiftUI
-import UserNotifications
 
 public struct PokemonListView: View {
     let store: PokemonStore
+
+    /// Injected by the App layer; defaults to a no-op in previews. Keeps `UserNotifications` out
+    /// of this view — scheduling goes through the `Core` contract.
+    @Environment(\.localNotificationScheduler) private var notificationScheduler
 
     /// Shared AppStorage key keeps theme in sync with ModularApp.
     @AppStorage(ThemePreference.appStorageKey) private var themeRaw: String = ThemePreference.system.rawValue
@@ -134,24 +137,15 @@ public struct PokemonListView: View {
     // MARK: - Notifications
 
     private func scheduleMewtwoNotification() async {
-        let center = UNUserNotificationCenter.current()
-        do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-            guard granted else { return }
-        } catch { return }
-
-        let content = UNMutableNotificationContent()
-        content.title = "A wild Pokémon appears"
-        content.body  = "Tap to meet #151."
-        content.sound = .default
-        content.userInfo = ["pokemon_id": 151]
-
-        let request = UNNotificationRequest(
-            identifier: "pokemon.detail.151",
-            content: content,
-            trigger: nil
+        guard await notificationScheduler.requestAuthorization() else { return }
+        await notificationScheduler.schedule(
+            LocalNotificationRequest(
+                identifier: "pokemon.detail.151",
+                title: CoreStrings.notificationDemoTitle,
+                body: CoreStrings.notificationDemoBody,
+                userInfo: ["pokemon_id": 151]
+            )
         )
-        try? await center.add(request)
     }
 }
 

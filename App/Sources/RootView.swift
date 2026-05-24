@@ -17,6 +17,7 @@ struct RootView: View {
     var body: some View {
         TabView {
             PokemonFlowView(store: pokemonStore)
+                .environment(\.localNotificationScheduler, SystemLocalNotificationScheduler())
                 .tabItem {
                     Label(CoreStrings.pokemonTitle, systemImage: "list.bullet")
                 }
