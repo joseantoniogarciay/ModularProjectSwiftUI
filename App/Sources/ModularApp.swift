@@ -31,6 +31,7 @@ struct ModularApp: App {
                 notificationRouter: notificationRouter
             )
             .environment(\.bannerPresenter, bannerPresenter)
+            .environment(\.remoteImageLoader, .kingfisher)
             .preferredColorScheme(themePreference.colorScheme)
         }
     }
