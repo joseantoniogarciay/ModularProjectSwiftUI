@@ -11,6 +11,11 @@ public struct PokemonDetailView: View {
     let pokemon: Pokemon
     let store: PokemonStore
 
+    public init(pokemon: Pokemon, store: PokemonStore) {
+        self.pokemon = pokemon
+        self.store = store
+    }
+
     @Environment(\.colorScheme) private var colorScheme
     /// Scales with Dynamic Type so the illustration stays proportional at larger categories.
     @ScaledMetric(relativeTo: .body) private var spriteSize: CGFloat = 200
@@ -175,7 +180,9 @@ public struct PokemonDetailView: View {
             .fill(SharedUIAsset.cardBackground.swiftUIColor)
             .shadow(
                 color: colorScheme == .dark ? .clear : .black.opacity(0.09),
-                radius: 10, x: 0, y: 3
+                radius: 10,
+                x: 0,
+                y: 3
             )
             .overlay {
                 if colorScheme == .dark {
@@ -198,27 +205,26 @@ public struct PokemonDetailView: View {
 // MARK: - Color helpers
 
 private extension PokemonDetailView {
-
     /// Exact RGB values matching the UIKit implementation for WCAG-correct contrast on type chips.
     static let typeColors: [String: Color] = [
-        "fire":     Color(red: 0.98, green: 0.42, blue: 0.21),
-        "water":    Color(red: 0.24, green: 0.56, blue: 0.90),
-        "grass":    Color(red: 0.32, green: 0.72, blue: 0.30),
+        "fire": Color(red: 0.98, green: 0.42, blue: 0.21),
+        "water": Color(red: 0.24, green: 0.56, blue: 0.90),
+        "grass": Color(red: 0.32, green: 0.72, blue: 0.30),
         "electric": Color(red: 0.95, green: 0.72, blue: 0.10),
-        "psychic":  Color(red: 0.95, green: 0.29, blue: 0.52),
-        "ice":      Color(red: 0.44, green: 0.74, blue: 0.83),
-        "dragon":   Color(red: 0.44, green: 0.20, blue: 0.95),
-        "dark":     Color(red: 0.44, green: 0.35, blue: 0.29),
-        "fairy":    Color(red: 0.90, green: 0.55, blue: 0.72),
+        "psychic": Color(red: 0.95, green: 0.29, blue: 0.52),
+        "ice": Color(red: 0.44, green: 0.74, blue: 0.83),
+        "dragon": Color(red: 0.44, green: 0.20, blue: 0.95),
+        "dark": Color(red: 0.44, green: 0.35, blue: 0.29),
+        "fairy": Color(red: 0.90, green: 0.55, blue: 0.72),
         "fighting": Color(red: 0.75, green: 0.19, blue: 0.15),
-        "poison":   Color(red: 0.63, green: 0.25, blue: 0.63),
-        "ground":   Color(red: 0.88, green: 0.72, blue: 0.35),
-        "rock":     Color(red: 0.71, green: 0.63, blue: 0.37),
-        "bug":      Color(red: 0.59, green: 0.67, blue: 0.08),
-        "ghost":    Color(red: 0.44, green: 0.35, blue: 0.62),
-        "steel":    Color(red: 0.60, green: 0.62, blue: 0.70),
-        "normal":   Color(red: 0.66, green: 0.65, blue: 0.48),
-        "flying":   Color(red: 0.55, green: 0.53, blue: 0.90),
+        "poison": Color(red: 0.63, green: 0.25, blue: 0.63),
+        "ground": Color(red: 0.88, green: 0.72, blue: 0.35),
+        "rock": Color(red: 0.71, green: 0.63, blue: 0.37),
+        "bug": Color(red: 0.59, green: 0.67, blue: 0.08),
+        "ghost": Color(red: 0.44, green: 0.35, blue: 0.62),
+        "steel": Color(red: 0.60, green: 0.62, blue: 0.70),
+        "normal": Color(red: 0.66, green: 0.65, blue: 0.48),
+        "flying": Color(red: 0.55, green: 0.53, blue: 0.90),
     ]
 
     func typeColor(_ type: String) -> Color {
@@ -228,12 +234,12 @@ private extension PokemonDetailView {
     /// WCAG relative luminance — picks black on light backgrounds, white on dark ones.
     /// Threshold 0.5 ensures readability on electric-yellow, pale-cyan, pale-pink chips.
     func contrastingTextColor(on background: Color) -> Color {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        UIColor(background).getRed(&r, green: &g, blue: &b, alpha: &a)
-        let toLinear: (CGFloat) -> CGFloat = { c in
-            c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        UIColor(background).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        let toLinear: (CGFloat) -> CGFloat = { channel in
+            channel <= 0.03928 ? channel / 12.92 : pow((channel + 0.055) / 1.055, 2.4)
         }
-        let luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
+        let luminance = 0.2126 * toLinear(red) + 0.7152 * toLinear(green) + 0.0722 * toLinear(blue)
         return luminance > 0.5 ? .black : .white
     }
 
@@ -266,18 +272,19 @@ private struct PreviewDetailRepository: PokemonRepository {
 
     func detail(id: Int) async throws(PokemonDetailError) -> PokemonDetail {
         PokemonDetail(
-            id: 25, name: "pikachu",
+            id: 25,
+            name: "pikachu",
             imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"),
             types: ["electric"],
             heightDecimetres: 4,
             weightHectograms: 60,
             stats: [
-                PokemonStat(name: "hp",               baseValue: 35),
-                PokemonStat(name: "attack",            baseValue: 55),
-                PokemonStat(name: "defense",           baseValue: 40),
-                PokemonStat(name: "special-attack",    baseValue: 50),
-                PokemonStat(name: "special-defense",   baseValue: 50),
-                PokemonStat(name: "speed",             baseValue: 90),
+                PokemonStat(name: "hp", baseValue: 35),
+                PokemonStat(name: "attack", baseValue: 55),
+                PokemonStat(name: "defense", baseValue: 40),
+                PokemonStat(name: "special-attack", baseValue: 50),
+                PokemonStat(name: "special-defense", baseValue: 50),
+                PokemonStat(name: "speed", baseValue: 90),
             ]
         )
     }
@@ -291,7 +298,8 @@ private struct ErrorDetailRepository: PokemonRepository {
 }
 
 private let previewPikachu = Pokemon(
-    id: 25, name: "pikachu",
+    id: 25,
+    name: "pikachu",
     imageURL: URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")
 )
 
