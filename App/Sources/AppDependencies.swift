@@ -1,4 +1,5 @@
 import Account
+import Cart
 import Core
 import Data
 import Foundation
@@ -11,6 +12,7 @@ final class AppDependencies {
 
     let pokemonStore: PokemonStore
     let accountStore: AccountStore
+    let cartStore: CartStore
 
     private init() {
         let os = ProcessInfo.processInfo.operatingSystemVersion
@@ -43,5 +45,16 @@ final class AppDependencies {
             }
         }
         accountStore = AccountStore(session: session)
+
+        // — Cart (authenticated)
+        let cartRepository = CartRepositoryImpl(client: authClient, baseURL: freeBaseURL)
+        let productsRepository = ProductsRepositoryImpl(client: authClient, baseURL: freeBaseURL)
+        cartStore = CartStore(
+            cartRepository: cartRepository,
+            productsRepository: productsRepository,
+            onSimulateExpiration: { [weak session] in
+                await session?.expireSession()
+            }
+        )
     }
 }
