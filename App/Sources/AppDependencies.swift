@@ -8,7 +8,14 @@ import Pokemon
 
 @MainActor
 final class AppDependencies {
-    static let shared = AppDependencies()
+    static let shared: AppDependencies = {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("--uitesting-list-error") { return AppDependencies.uitestingWithListError() }
+        if args.contains("--uitesting") { return AppDependencies.uitesting() }
+        #endif
+        return AppDependencies()
+    }()
 
     let pokemonStore: PokemonStore
     let accountStore: AccountStore
@@ -57,4 +64,14 @@ final class AppDependencies {
             }
         )
     }
+
+    #if DEBUG
+    /// Designated initializer used by UITesting factory methods only.
+    /// Not available in release builds.
+    internal init(pokemonStore: PokemonStore, accountStore: AccountStore, cartStore: CartStore) {
+        self.pokemonStore = pokemonStore
+        self.accountStore = accountStore
+        self.cartStore = cartStore
+    }
+    #endif
 }
