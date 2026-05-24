@@ -1,5 +1,6 @@
 import Core
 import Foundation
+import Observation
 
 public enum CartViewState: Sendable {
     case loading
