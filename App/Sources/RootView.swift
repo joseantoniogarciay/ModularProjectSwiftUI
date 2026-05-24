@@ -1,4 +1,5 @@
 import Account
+import Cart
 import Core
 import Pokemon
 import SwiftUI
@@ -10,12 +11,18 @@ import SwiftUI
 struct RootView: View {
     let pokemonStore: PokemonStore
     let accountStore: AccountStore
+    let cartStore: CartStore
 
     var body: some View {
         TabView {
             PokemonFlowView(store: pokemonStore)
                 .tabItem {
                     Label(CoreStrings.pokemonTitle, systemImage: "list.bullet")
+                }
+
+            CartFlowView(store: cartStore)
+                .tabItem {
+                    Label(CoreStrings.cartTitle, systemImage: "cart")
                 }
 
             AccountFlowView(store: accountStore)
@@ -31,7 +38,12 @@ struct RootView: View {
 #Preview {
     RootView(
         pokemonStore: PokemonStore(repository: PreviewPokemonRepository()),
-        accountStore: AccountStore(session: PreviewAccountSession())
+        accountStore: AccountStore(session: PreviewAccountSession()),
+        cartStore: CartStore(
+            cartRepository: PreviewCartRepository(),
+            productsRepository: PreviewProductsRepository(),
+            onSimulateExpiration: {}
+        )
     )
 }
 
@@ -52,4 +64,17 @@ private final class PreviewAccountSession: AuthSession {
     func refreshCurrentUser() async throws(CurrentUserError) {}
     func logout() async {}
     func expireSession() async {}
+}
+
+private struct PreviewCartRepository: CartRepository {
+    func get() async throws(CartFetchError) -> Cart {
+        Cart(items: [], total: 0)
+    }
+    func addItem(productId: String) async throws(CartAddItemError) -> Cart {
+        Cart(items: [], total: 0)
+    }
+}
+
+private struct PreviewProductsRepository: ProductsRepository {
+    func list() async throws(ProductsListError) -> [Product] { [] }
 }

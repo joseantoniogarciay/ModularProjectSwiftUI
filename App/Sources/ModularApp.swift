@@ -17,7 +17,8 @@ struct ModularApp: App {
         WindowGroup {
             RootView(
                 pokemonStore: AppDependencies.shared.pokemonStore,
-                accountStore: AppDependencies.shared.accountStore
+                accountStore: AppDependencies.shared.accountStore,
+                cartStore: AppDependencies.shared.cartStore
             )
             .preferredColorScheme(themePreference.colorScheme)
         }
