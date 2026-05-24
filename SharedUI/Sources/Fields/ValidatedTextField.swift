@@ -54,7 +54,7 @@ public struct ValidatedTextField: View {
             if let error {
                 Text(error)
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(SharedUIAsset.bannerErrorForeground.swiftUIColor)
                     .accessibilityLabel(error)
             }
         }

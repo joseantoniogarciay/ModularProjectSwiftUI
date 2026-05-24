@@ -22,14 +22,14 @@ public struct PrimaryButtonStyle: ButtonStyle {
                 .opacity(isLoading ? 0 : 1)
             if isLoading {
                 ProgressView()
-                    .tint(.white)
+                    .tint(SharedUIAsset.background.swiftUIColor)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(Color.accentColor)
-        .foregroundStyle(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(SharedUIAsset.text.swiftUIColor)
+        .foregroundStyle(SharedUIAsset.background.swiftUIColor)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .opacity(configuration.isPressed ? 0.8 : 1)
         .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }

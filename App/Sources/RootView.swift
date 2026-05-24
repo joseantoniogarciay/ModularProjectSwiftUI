@@ -2,6 +2,7 @@ import Account
 import Cart
 import Core
 import Pokemon
+import SharedUI
 import SwiftUI
 
 /// App root view — mirrors `AppRootCoordinator` / `UITabBarController` from the UIKit project.
@@ -32,6 +33,7 @@ struct RootView: View {
                     Label(CoreStrings.accountTitle, systemImage: "person.crop.circle")
                 }
         }
+        .tint(SharedUIAsset.accent.swiftUIColor)
         // Notification deep-link: present the Pokémon detail modally on top of any tab,
         // matching UIKit's PushNotificationRouter modal present.
         .sheet(item: $notificationRouter.deepLink) { link in
