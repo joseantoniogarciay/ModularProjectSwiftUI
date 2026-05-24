@@ -8,3 +8,6 @@ xcuserdata/
 .DS_Store
 .worktrees/
 **/build/
+
+# Local planning docs (not committed)
+docs/
