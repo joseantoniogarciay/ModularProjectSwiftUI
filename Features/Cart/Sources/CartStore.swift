@@ -10,7 +10,7 @@ public enum CartViewState: Sendable {
 
 @Observable @MainActor
 public final class CartStore {
-    public private(set) var cart: Cart = Cart(items: [], total: 0)
+    public private(set) var cart = Cart(items: [], total: 0)
     public private(set) var viewState: CartViewState = .loading
     public private(set) var isAddingItem = false
     public var addErrorMessage: String?

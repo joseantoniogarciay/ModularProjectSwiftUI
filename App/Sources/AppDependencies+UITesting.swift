@@ -49,9 +49,9 @@ extension AppDependencies {
 /// In-memory Pokémon repository — returns 5 sample Pokémon instantly, no network.
 private struct UITestPokemonRepository: PokemonRepository {
     private static let samples: [Pokemon] = [
-        Pokemon(id: 1, name: "bulbasaur",  imageURL: nil),
-        Pokemon(id: 2, name: "ivysaur",    imageURL: nil),
-        Pokemon(id: 3, name: "venusaur",   imageURL: nil),
+        Pokemon(id: 1, name: "bulbasaur", imageURL: nil),
+        Pokemon(id: 2, name: "ivysaur", imageURL: nil),
+        Pokemon(id: 3, name: "venusaur", imageURL: nil),
         Pokemon(id: 4, name: "charmander", imageURL: nil),
         Pokemon(id: 5, name: "charmeleon", imageURL: nil),
     ]
@@ -71,8 +71,8 @@ private struct UITestPokemonRepository: PokemonRepository {
             heightDecimetres: 7,
             weightHectograms: 69,
             stats: [
-                PokemonStat(name: "hp",      baseValue: 45),
-                PokemonStat(name: "attack",  baseValue: 49),
+                PokemonStat(name: "hp", baseValue: 45),
+                PokemonStat(name: "attack", baseValue: 49),
                 PokemonStat(name: "defense", baseValue: 49),
             ]
         )

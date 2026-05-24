@@ -18,7 +18,7 @@ public final class AccountStore {
     public func start() async {
         // Restore session first; authStates() immediately yields the post-restore state.
         await session.restore()
-        var previous: AuthState? = nil
+        var previous: AuthState?
         for await state in session.authStates() {
             if case .anonymous(.sessionExpired) = state,
                case .authenticated = previous {

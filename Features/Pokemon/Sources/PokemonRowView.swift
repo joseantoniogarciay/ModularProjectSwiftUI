@@ -41,7 +41,9 @@ struct PokemonRowView: View {
             .fill(SharedUIAsset.cardBackground.swiftUIColor)
             .shadow(
                 color: colorScheme == .dark ? .clear : .black.opacity(0.09),
-                radius: 10, x: 0, y: 3
+                radius: 10,
+                x: 0,
+                y: 3
             )
             .overlay {
                 if colorScheme == .dark {

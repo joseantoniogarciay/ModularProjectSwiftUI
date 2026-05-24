@@ -4,7 +4,6 @@ import Observation
 
 @Observable @MainActor
 public final class PokemonStore {
-
     // MARK: - List state
 
     public enum ListState { case idle, loading, loaded, error(PokemonListError) }
@@ -14,7 +13,7 @@ public final class PokemonStore {
     public private(set) var hasMore = true
     /// Non-nil when a paginated fetch fails after the first page has already loaded.
     /// The list remains visible; only the bottom loader shows the inline retry.
-    public private(set) var pageError: PokemonListError? = nil
+    public private(set) var pageError: PokemonListError?
 
     // MARK: - Detail state (cached per ID)
 
