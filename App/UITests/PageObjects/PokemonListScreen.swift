@@ -18,15 +18,22 @@ struct PokemonListScreen {
     // MARK: - Elements
 
     /// The main list (accessibilityIdentifier = "pokemon.list.table").
+    ///
+    /// SwiftUI's `List` is backed by a `UICollectionView`, so it surfaces in the
+    /// XCUI tree as a `collectionView` (not a `table`).
     var table: XCUIElement {
-        app.tables["pokemon.list.table"]
+        app.collectionViews["pokemon.list.table"]
     }
 
     /// The full-screen error container
     /// (accessibilityIdentifier = "pokemon.list.retry" on the RetryView).
-    /// The retry button is a child of this container.
+    ///
+    /// SwiftUI propagates the container's identifier down to each leaf element
+    /// (the warning image, the message text, and the retry button) rather than to a
+    /// single wrapping element. We match any descendant carrying the identifier so the
+    /// query resolves regardless of which leaf the snapshot returns first.
     var retryContainer: XCUIElement {
-        app.otherElements["pokemon.list.retry"]
+        app.descendants(matching: .any).matching(identifier: "pokemon.list.retry").firstMatch
     }
 
     // MARK: - Queries
@@ -43,10 +50,24 @@ struct PokemonListScreen {
         retryContainer.waitForExistence(timeout: timeout)
     }
 
+    /// The number of Pokémon rows currently visible in the list.
+    ///
+    /// Rows are `NavigationLink`s that surface as `buttons` in the XCUI tree;
+    /// each carries an identifier of the form `"pokemon.cell.<name>"`.
+    var rowCount: Int {
+        app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'pokemon.cell.'")
+        ).count
+    }
+
     /// Returns the cell for the Pokémon with the given name.
     /// Matched via `accessibilityIdentifier = "pokemon.cell.<name.lowercased()>"`.
+    ///
+    /// In SwiftUI the row identifier is applied to the `NavigationLink`, which surfaces
+    /// as a `button` (the enclosing collection-view cell carries no identifier), so the
+    /// row is queried as a `button`. The name/number `StaticText`s remain descendants.
     func cell(named name: String) -> XCUIElement {
-        app.cells["pokemon.cell.\(name.lowercased())"]
+        app.buttons["pokemon.cell.\(name.lowercased())"]
     }
 
     // MARK: - Actions
