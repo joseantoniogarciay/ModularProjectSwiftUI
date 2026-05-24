@@ -115,6 +115,9 @@ final class AuthSessionImplTests: XCTestCase {
 
     override func tearDown() {
         sut = nil
+        tokenStore = nil
+        accessRepository = nil
+        userRepository = nil
         super.tearDown()
     }
 
@@ -336,5 +339,39 @@ final class AuthSessionImplTests: XCTestCase {
             return
         }
         XCTAssertEqual(reason, .initial)
+    }
+
+    // MARK: - refreshCurrentUser()
+
+    @MainActor
+    func testRefreshCurrentUser_success_updatesAuthenticatedUser() async throws {
+        // Start authenticated so refresh has something to update.
+        try await sut.login(identifier: "u", password: "p")
+
+        let updatedUser = User.fixture(id: "refreshed")
+        userRepository.stubbedUser = updatedUser
+
+        try await sut.refreshCurrentUser()
+
+        guard case .authenticated(let user) = sut.authState else {
+            XCTFail("Expected .authenticated after refresh, got \(sut.authState)")
+            return
+        }
+        XCTAssertEqual(user.id, "refreshed")
+    }
+
+    @MainActor
+    func testRefreshCurrentUser_repositoryThrows_propagatesError() async {
+        userRepository.stubbedError = .notAuthenticated
+
+        do {
+            try await sut.refreshCurrentUser()
+            XCTFail("Expected refreshCurrentUser to throw")
+        } catch {
+            guard case .notAuthenticated = error else {
+                XCTFail("Expected .notAuthenticated, got \(error)")
+                return
+            }
+        }
     }
 }

@@ -51,11 +51,13 @@ final class JWTExpiryTests: XCTestCase {
 
     // MARK: - Malformed structure
 
-    func testMalformedToken_tooFewSegments_returnsNil() {
-        // A JWT needs 3 dot-separated segments; 2 is not enough.
+    func testMalformedToken_twoSegments_returnsNil() {
+        // JWTExpiry.expirationDate guards segments.count >= 2, so "header.payload"
+        // passes that guard. It returns nil because the second segment ("payload")
+        // is not valid base64url — decodeBase64URL returns nil downstream.
         XCTAssertNil(
             JWTExpiry.expirationDate(of: "header.payload"),
-            "A token with fewer than 3 segments must return nil"
+            "A 2-segment token whose payload is not valid base64url must return nil"
         )
     }
 
