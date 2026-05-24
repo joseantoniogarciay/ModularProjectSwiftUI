@@ -1,9 +1,11 @@
 import Core
+import SharedUI
 import SwiftUI
 
 struct CartView: View {
     @State var store: CartStore
     @Environment(\.openURL) private var openURL
+    @Environment(\.bannerPresenter) private var bannerPresenter
 
     private static let priceFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -47,16 +49,14 @@ struct CartView: View {
         } message: {
             Text(CoreStrings.cartNoProductsMessage)
         }
-        .alert(
-            CoreStrings.errorAlertTitle,
-            isPresented: Binding(
-                get: { store.addErrorMessage != nil },
-                set: { if !$0 { store.addErrorMessage = nil } }
-            )
-        ) {
-            Button(CoreStrings.okButtonTitle, role: .cancel) {}
-        } message: {
-            Text(store.addErrorMessage ?? "")
+        .onChange(of: store.addErrorMessage) { _, message in
+            guard let message else { return }
+            bannerPresenter?.show(BannerPayload(
+                message: message,
+                style: .error,
+                iconSystemName: "xmark.circle.fill"
+            ))
+            store.addErrorMessage = nil
         }
     }
 

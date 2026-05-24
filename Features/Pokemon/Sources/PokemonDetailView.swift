@@ -17,6 +17,7 @@ public struct PokemonDetailView: View {
     }
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.bannerPresenter) private var bannerPresenter
     /// Scales with Dynamic Type so the illustration stays proportional at larger categories.
     @ScaledMetric(relativeTo: .body) private var spriteSize: CGFloat = 200
 
@@ -42,7 +43,18 @@ public struct PokemonDetailView: View {
         }
         .navigationTitle(pokemon.name.capitalized)
         .navigationBarTitleDisplayMode(.inline)
-        .task { await store.loadDetail(id: pokemon.id) }
+        .task {
+            await store.loadDetail(id: pokemon.id)
+            // SwiftUI-only flourish (no UIKit counterpart): greet the loaded Pokémon with an
+            // info banner once its detail finishes loading, in both push and sheet contexts.
+            if case .loaded(let detail) = store.detailStates[pokemon.id] {
+                bannerPresenter?.show(BannerPayload(
+                    message: detail.name.capitalized,
+                    style: .info,
+                    iconSystemName: "checkmark.circle.fill"
+                ))
+            }
+        }
     }
 
     // MARK: - Detail content

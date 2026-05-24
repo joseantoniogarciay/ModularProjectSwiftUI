@@ -1,4 +1,5 @@
 import Core
+import SharedUI
 import SwiftUI
 
 /// Root of the Account tab. Owns a NavigationStack and coordinates
@@ -7,6 +8,8 @@ public struct AccountFlowView: View {
     let store: AccountStore
 
     @State private var path: [AccountRoute] = []
+
+    @Environment(\.bannerPresenter) private var bannerPresenter
 
     enum AccountRoute: Hashable {
         case register
@@ -29,12 +32,14 @@ public struct AccountFlowView: View {
                 }
         }
         .task { await store.start() }
-        .alert(
-            CoreStrings.accountSessionExpiredMessage,
-            isPresented: Binding(
-                get: { store.sessionExpiredAlert },
-                set: { _ in store.dismissSessionExpiredAlert() }
-            )
-        ) {}
+        .onChange(of: store.sessionExpiredAlert) { _, expired in
+            guard expired else { return }
+            bannerPresenter?.show(BannerPayload(
+                message: CoreStrings.accountSessionExpiredMessage,
+                style: .warning,
+                iconSystemName: "exclamationmark.triangle.fill"
+            ))
+            store.dismissSessionExpiredAlert()
+        }
     }
 }

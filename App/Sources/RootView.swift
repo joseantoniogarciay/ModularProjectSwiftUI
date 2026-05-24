@@ -34,6 +34,7 @@ struct RootView: View {
                 }
         }
         .tint(SharedUIAsset.accent.swiftUIColor)
+        .bannerOverlay()
         // Notification deep-link: present the Pokémon detail modally on top of any tab,
         // matching UIKit's PushNotificationRouter modal present.
         .sheet(item: $notificationRouter.deepLink) { link in
@@ -47,6 +48,10 @@ struct RootView: View {
                         }
                     }
             }
+            // A sheet is its own presentation context: the root overlay renders behind it,
+            // so host the overlay here too. Both share the same presenter, so the occluded
+            // root copy is never visible — no duplication.
+            .bannerOverlay()
         }
     }
 }

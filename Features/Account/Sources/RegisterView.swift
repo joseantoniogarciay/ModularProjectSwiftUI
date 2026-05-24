@@ -11,13 +11,13 @@ struct RegisterView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
-    @State private var alertMessage: String?
 
     @State private var usernameError: String?
     @State private var emailError: String?
     @State private var passwordError: String?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.bannerPresenter) private var bannerPresenter
 
     var body: some View {
         ScrollView {
@@ -76,10 +76,6 @@ struct RegisterView: View {
         .navigationBarTitleDisplayMode(.inline)
         .scrollBounceBehavior(.basedOnSize)
         .interactiveDismissDisabled(isLoading)
-        .alert(alertMessage ?? "", isPresented: Binding(
-            get: { alertMessage != nil },
-            set: { if !$0 { alertMessage = nil } }
-        )) {}
     }
 
     private func registerTapped() async {
@@ -104,7 +100,7 @@ struct RegisterView: View {
             )
             onSuccess()
         } catch {
-            alertMessage = message(for: error)
+            bannerPresenter?.show(BannerPayload(message: message(for: error), style: .error))
         }
     }
 
