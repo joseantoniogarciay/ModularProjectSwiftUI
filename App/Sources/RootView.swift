@@ -7,8 +7,9 @@ import SwiftUI
 
 /// App root view — mirrors `AppRootCoordinator` / `UITabBarController` from the UIKit project.
 ///
-/// Hosts one tab per feature. Navigation within each tab is owned by its flow view
-/// (e.g. `PokemonFlowView`, `AccountFlowView`), which plays the role of the UIKit coordinator.
+/// Hosts two tabs (Pokémon and Account), matching the UIKit tab bar. The cart is not a
+/// tab: it's pushed from inside the Account profile, so the App layer injects `CartView`
+/// into `AccountFlowView` — mirroring `AppRootCoordinator`'s `didRequestCartIn` hand-off.
 struct RootView: View {
     let pokemonStore: PokemonStore
     let accountStore: AccountStore
@@ -23,17 +24,15 @@ struct RootView: View {
                     Label(CoreStrings.pokemonTitle, systemImage: "list.bullet")
                 }
 
-            CartFlowView(store: cartStore)
-                .tabItem {
-                    Label(CoreStrings.cartTitle, systemImage: "cart")
-                }
-
-            AccountFlowView(store: accountStore)
-                .tabItem {
-                    Label(CoreStrings.accountTitle, systemImage: "person.crop.circle")
-                }
+            AccountFlowView(store: accountStore) {
+                CartView(store: cartStore)
+            }
+            .tabItem {
+                Label(CoreStrings.accountTitle, systemImage: "person.crop.circle")
+            }
         }
         .tint(SharedUIAsset.accent.swiftUIColor)
+        .bannerOverlay()
         // Notification deep-link: present the Pokémon detail modally on top of any tab,
         // matching UIKit's PushNotificationRouter modal present.
         .sheet(item: $notificationRouter.deepLink) { link in
@@ -47,6 +46,10 @@ struct RootView: View {
                         }
                     }
             }
+            // A sheet is its own presentation context: the root overlay renders behind it,
+            // so host the overlay here too. Both share the same presenter, so the occluded
+            // root copy is never visible — no duplication.
+            .bannerOverlay()
         }
     }
 }

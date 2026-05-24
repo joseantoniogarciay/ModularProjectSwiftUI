@@ -38,18 +38,25 @@ public struct ValidatedTextField: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Group {
-                if isSecure {
-                    SecureField(placeholder, text: $text)
-                } else {
-                    TextField(placeholder, text: $text)
-                        .keyboardType(keyboardType)
+            VStack(spacing: 0) {
+                Group {
+                    if isSecure {
+                        SecureField(placeholder, text: $text)
+                    } else {
+                        TextField(placeholder, text: $text)
+                            .keyboardType(keyboardType)
+                    }
                 }
+                .font(.body)
+                .textContentType(contentType)
+                .autocapitalization(.none)
+                .autocorrectionDisabled()
+                .frame(height: 44)
+
+                SharedUIAsset.secondaryText.swiftUIColor
+                    .opacity(0.3)
+                    .frame(height: 1)
             }
-            .textFieldStyle(.roundedBorder)
-            .textContentType(contentType)
-            .autocapitalization(.none)
-            .autocorrectionDisabled()
 
             if let error {
                 Text(error)

@@ -36,6 +36,7 @@
 "account_error_taken" = "That username or email is already taken.";
 "account_error_generic" = "Something went wrong. Please try again.";
 "account_session_expired_message" = "Your session expired. Please log in again.";
+"account_cart_button" = "My cart";
 
 "cart_title" = "Cart";
 "cart_screen_title" = "My cart";
@@ -49,6 +50,4 @@
 "cart_no_products_open_button" = "Open feed";
 "cart_no_products_cancel_button" = "Not now";
 
-"error_alert_title" = "Error";
-"ok_button_title" = "OK";
 "common_close" = "Close";

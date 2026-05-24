@@ -13,29 +13,30 @@
 
 "account_logged_out_title" = "Bienvenido";
 "account_logged_out_subtitle" = "Inicia sesión o crea una cuenta para continuar.";
-"account_username_or_email_placeholder" = "Usuario o correo";
-"account_email_placeholder" = "Correo electrónico";
-"account_username_placeholder" = "Nombre de usuario";
+"account_username_or_email_placeholder" = "Usuario o email";
+"account_email_placeholder" = "Email";
+"account_username_placeholder" = "Usuario";
 "account_password_placeholder" = "Contraseña";
 "account_login_button" = "Iniciar sesión";
 "account_register_button" = "Crear cuenta";
 "account_register_screen_title" = "Crear cuenta";
-"account_register_subtitle" = "Rellena tus datos para empezar.";
+"account_register_subtitle" = "Rellena tus datos para comenzar.";
 "account_logout_button" = "Cerrar sesión";
 "account_logout_confirm_title" = "¿Cerrar sesión?";
-"account_logout_confirm_message" = "Tendrás que iniciar sesión de nuevo para acceder a tu cuenta.";
+"account_logout_confirm_message" = "Tendrás que volver a iniciar sesión para acceder a tu cuenta.";
 "account_logout_confirm_button" = "Cerrar sesión";
 "account_cancel_button" = "Cancelar";
 "account_greeting_format" = "Hola, %@";
-"account_profile_email_label" = "Correo";
+"account_profile_email_label" = "Email";
 "account_profile_role_label" = "Rol";
 "account_profile_id_label" = "ID de usuario";
 "account_error_field_required" = "Este campo es obligatorio.";
-"account_error_invalid_email" = "Introduce un correo electrónico válido.";
-"account_error_invalid_credentials" = "Usuario o contraseña incorrectos.";
-"account_error_taken" = "Ese nombre de usuario o correo ya está en uso.";
+"account_error_invalid_email" = "Introduce un email válido.";
+"account_error_invalid_credentials" = "Usuario o contraseña no válidos.";
+"account_error_taken" = "El usuario o email ya está en uso.";
 "account_error_generic" = "Algo salió mal. Inténtalo de nuevo.";
-"account_session_expired_message" = "Tu sesión ha expirado. Inicia sesión de nuevo.";
+"account_session_expired_message" = "Tu sesión ha caducado. Vuelve a iniciar sesión.";
+"account_cart_button" = "Mi carrito";
 
 "cart_title" = "Carrito";
 "cart_screen_title" = "Mi carrito";
@@ -49,6 +50,4 @@
 "cart_no_products_open_button" = "Abrir el feed";
 "cart_no_products_cancel_button" = "Ahora no";
 
-"error_alert_title" = "Error";
-"ok_button_title" = "OK";
 "common_close" = "Cerrar";

@@ -11,75 +11,77 @@ struct RegisterView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
-    @State private var alertMessage: String?
 
     @State private var usernameError: String?
     @State private var emailError: String?
     @State private var passwordError: String?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.bannerPresenter) private var bannerPresenter
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
-                SharedUIAsset.logo.swiftUIImage
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 64, height: 64)
-                    .accessibilityHidden(true)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    SharedUIAsset.logo.swiftUIImage
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 64, height: 64)
+                        .accessibilityHidden(true)
+                        .padding(.bottom, 40)
 
-                // Header
-                VStack(spacing: 8) {
-                    Text(CoreStrings.accountRegisterScreenTitle)
-                        .font(.largeTitle.bold())
-                        .multilineTextAlignment(.center)
-                        .accessibilityAddTraits(.isHeader)
-                    Text(CoreStrings.accountRegisterSubtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
+                    // Header
+                    VStack(spacing: 8) {
+                        Text(CoreStrings.accountRegisterScreenTitle)
+                            .font(.largeTitle)
+                            .multilineTextAlignment(.center)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(CoreStrings.accountRegisterSubtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.bottom, 32)
 
-                // Fields
-                VStack(spacing: 8) {
-                    ValidatedTextField(
-                        placeholder: CoreStrings.accountUsernamePlaceholder,
-                        text: $username,
-                        error: usernameError,
-                        contentType: .username
-                    )
-                    ValidatedTextField(
-                        placeholder: CoreStrings.accountEmailPlaceholder,
-                        text: $email,
-                        error: emailError,
-                        contentType: .emailAddress,
-                        keyboardType: .emailAddress
-                    )
-                    ValidatedTextField(
-                        placeholder: CoreStrings.accountPasswordPlaceholder,
-                        text: $password,
-                        isSecure: true,
-                        error: passwordError,
-                        contentType: .newPassword
-                    )
-                }
+                    // Fields
+                    VStack(spacing: 8) {
+                        ValidatedTextField(
+                            placeholder: CoreStrings.accountUsernamePlaceholder,
+                            text: $username,
+                            error: usernameError,
+                            contentType: .username
+                        )
+                        ValidatedTextField(
+                            placeholder: CoreStrings.accountEmailPlaceholder,
+                            text: $email,
+                            error: emailError,
+                            contentType: .emailAddress,
+                            keyboardType: .emailAddress
+                        )
+                        ValidatedTextField(
+                            placeholder: CoreStrings.accountPasswordPlaceholder,
+                            text: $password,
+                            isSecure: true,
+                            error: passwordError,
+                            contentType: .newPassword
+                        )
+                    }
+                    .padding(.bottom, 24)
 
-                Button(CoreStrings.accountRegisterButton) {
-                    Task { await registerTapped() }
+                    Button(CoreStrings.accountRegisterButton) {
+                        Task { await registerTapped() }
+                    }
+                    .buttonStyle(PrimaryButtonStyle(isLoading: isLoading))
+                    .disabled(isLoading)
                 }
-                .buttonStyle(PrimaryButtonStyle(isLoading: isLoading))
-                .disabled(isLoading)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .frame(minHeight: proxy.size.height)
             }
-            .padding(24)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .navigationTitle(CoreStrings.accountRegisterScreenTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .scrollBounceBehavior(.basedOnSize)
-        .interactiveDismissDisabled(isLoading)
-        .alert(alertMessage ?? "", isPresented: Binding(
-            get: { alertMessage != nil },
-            set: { if !$0 { alertMessage = nil } }
-        )) {}
+        .background(SharedUIAsset.background.swiftUIColor.ignoresSafeArea())
+        .navigationBarBackButtonHidden(isLoading)
     }
 
     private func registerTapped() async {
@@ -104,7 +106,7 @@ struct RegisterView: View {
             )
             onSuccess()
         } catch {
-            alertMessage = message(for: error)
+            bannerPresenter?.show(BannerPayload(message: message(for: error), style: .error))
         }
     }
 

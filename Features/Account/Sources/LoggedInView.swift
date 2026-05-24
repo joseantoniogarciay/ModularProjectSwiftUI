@@ -2,27 +2,38 @@ import Core
 import SharedUI
 import SwiftUI
 
-/// Displays the authenticated user's profile and a logout button.
+/// Displays the authenticated user's profile, a cart link, and a logout button.
 struct LoggedInView: View {
     let store: AccountStore
     let user: User
+    let onShowCart: () -> Void
 
     @State private var showLogoutConfirm = false
     @State private var isLoggingOut = false
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text(CoreStrings.accountGreetingFormat(user.username))
-                    .font(.largeTitle.bold())
+                    .font(.largeTitle)
                     .accessibilityAddTraits(.isHeader)
 
                 profileCard
+                    .padding(.top, 24)
 
-                Spacer(minLength: 0)
+                Button(CoreStrings.accountCartButton) {
+                    onShowCart()
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 32)
             }
-            .padding(24)
+            .padding(.horizontal, 24)
+            .padding(.top, 32)
+            .padding(.bottom, 32)
         }
+        .background(SharedUIAsset.background.swiftUIColor.ignoresSafeArea())
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -67,8 +78,16 @@ struct LoggedInView: View {
             infoRow(label: CoreStrings.accountProfileIdLabel, value: user.id)
         }
         .padding(16)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(SharedUIAsset.cardBackground.swiftUIColor)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.14), lineWidth: 0.5)
+                .opacity(colorScheme == .dark ? 1 : 0)
+        )
+        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0 : 0.09), radius: 10, x: 0, y: 3)
         .accessibilityElement(children: .combine)
     }
 
@@ -91,9 +110,9 @@ struct LoggedInView: View {
     NavigationStack {
         LoggedInView(
             store: AccountStore(session: PreviewAuthSession()),
-            user: User(id: "42", username: "sara", email: "sara@example.com", role: "admin", avatarURL: nil)
+            user: User(id: "42", username: "sara", email: "sara@example.com", role: "admin", avatarURL: nil),
+            onShowCart: {}
         )
-        .navigationTitle(CoreStrings.accountTitle)
     }
 }
 #endif
