@@ -1,4 +1,5 @@
 import Core
+import SharedUI
 import SwiftUI
 
 @main
@@ -13,6 +14,10 @@ struct ModularApp: App {
     /// `UNUserNotificationCenter` delegate, mirroring the UIKit router created in `SceneDelegate`.
     @State private var notificationRouter = NotificationRouter()
 
+    /// Drives the top-anchored banner overlay for the app's lifetime, mirroring the
+    /// shared `BannerCenter` in the UIKit project.
+    @State private var bannerPresenter = BannerPresenter()
+
     private var themePreference: ThemePreference {
         ThemePreference(rawValue: themeRaw) ?? .system
     }
@@ -25,6 +30,7 @@ struct ModularApp: App {
                 cartStore: AppDependencies.shared.cartStore,
                 notificationRouter: notificationRouter
             )
+            .environment(\.bannerPresenter, bannerPresenter)
             .preferredColorScheme(themePreference.colorScheme)
         }
     }

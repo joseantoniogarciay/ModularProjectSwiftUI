@@ -10,11 +10,12 @@ struct LoggedOutView: View {
     @State private var identifier = ""
     @State private var password = ""
     @State private var isLoading = false
-    @State private var alertMessage: String?
 
     // Validation errors shown inline
     @State private var identifierError: String?
     @State private var passwordError: String?
+
+    @Environment(\.bannerPresenter) private var bannerPresenter
 
     var body: some View {
         ScrollView {
@@ -74,10 +75,6 @@ struct LoggedOutView: View {
             .padding(24)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .alert(alertMessage ?? "", isPresented: Binding(
-            get: { alertMessage != nil },
-            set: { if !$0 { alertMessage = nil } }
-        )) {}
     }
 
     private func loginTapped() async {
@@ -96,7 +93,7 @@ struct LoggedOutView: View {
                 password: password
             )
         } catch {
-            alertMessage = message(for: error)
+            bannerPresenter?.show(BannerPayload(message: message(for: error), style: .error))
         }
     }
 
