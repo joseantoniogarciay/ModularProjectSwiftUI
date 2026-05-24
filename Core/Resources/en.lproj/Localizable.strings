@@ -45,3 +45,6 @@
 "cart_no_products_message" = "The product catalogue is empty. Open api.freeapi.app to add some products, then come back and tap + again.";
 "cart_no_products_open_button" = "Open feed";
 "cart_no_products_cancel_button" = "Not now";
+
+"error_alert_title" = "Error";
+"ok_button_title" = "OK";

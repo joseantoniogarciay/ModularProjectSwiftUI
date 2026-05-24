@@ -1,9 +1,9 @@
 import Core
 import SwiftUI
-import UIKit
 
 struct CartView: View {
     @State var store: CartStore
+    @Environment(\.openURL) private var openURL
 
     private static let priceFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -39,20 +39,22 @@ struct CartView: View {
             isPresented: $store.showNoProductsAlert
         ) {
             Button(CoreStrings.cartNoProductsOpenButton) {
-                UIApplication.shared.open(URL(string: "https://api.freeapi.app")!)
+                if let url = URL(string: "https://api.freeapi.app") {
+                    openURL(url)
+                }
             }
             Button(CoreStrings.cartNoProductsCancelButton, role: .cancel) {}
         } message: {
             Text(CoreStrings.cartNoProductsMessage)
         }
         .alert(
-            "Error",
+            CoreStrings.errorAlertTitle,
             isPresented: Binding(
                 get: { store.addErrorMessage != nil },
                 set: { if !$0 { store.addErrorMessage = nil } }
             )
         ) {
-            Button("OK", role: .cancel) {}
+            Button(CoreStrings.okButtonTitle, role: .cancel) {}
         } message: {
             Text(store.addErrorMessage ?? "")
         }
@@ -72,7 +74,7 @@ struct CartView: View {
                     }
                 }
             }
-            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .padding(.horizontal, 24)
             .padding(.top, 24)
@@ -94,7 +96,7 @@ struct CartView: View {
             .font(.headline)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
-            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
