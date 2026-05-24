@@ -3,8 +3,6 @@ import ProjectDescriptionHelpers
 
 let project = Project.framework(
     name: "SharedUI",
-    dependencies: [
-        .external(name: "Kingfisher"),
-    ],
+    dependencies: [],
     resources: ["Resources/**"]
 )

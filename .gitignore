@@ -11,3 +11,6 @@ xcuserdata/
 
 # Local planning docs (not committed)
 docs/
+
+# Local Claude Code config (not committed)
+.claude/

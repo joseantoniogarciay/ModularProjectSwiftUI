@@ -1,22 +1,19 @@
-import Kingfisher
 import SwiftUI
 
+/// Renders a remote image using the loader injected via `\.remoteImageLoader`.
+/// SharedUI stays free of any concrete image library; App provides the Kingfisher-backed
+/// loader, and a native `AsyncImage` fallback is used when none is injected.
 public struct RemoteImage: View {
     private let url: URL?
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.remoteImageLoader) private var loader
 
     public init(url: URL?) {
         self.url = url
     }
 
     public var body: some View {
-        KFImage(url)
-            .placeholder { ProgressView() }
-            // Honour Reduce Motion: pass duration 0 to skip the cross-fade animation.
-            .fade(duration: reduceMotion ? 0 : 0.25)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+        loader.makeImage(url)
     }
 }
 
