@@ -12,10 +12,12 @@ struct RootView: View {
     let pokemonStore: PokemonStore
     let accountStore: AccountStore
     let cartStore: CartStore
+    @Bindable var notificationRouter: NotificationRouter
 
     var body: some View {
         TabView {
             PokemonFlowView(store: pokemonStore)
+                .environment(\.localNotificationScheduler, SystemLocalNotificationScheduler())
                 .tabItem {
                     Label(CoreStrings.pokemonTitle, systemImage: "list.bullet")
                 }
@@ -30,6 +32,20 @@ struct RootView: View {
                     Label(CoreStrings.accountTitle, systemImage: "person.crop.circle")
                 }
         }
+        // Notification deep-link: present the Pokémon detail modally on top of any tab,
+        // matching UIKit's PushNotificationRouter modal present.
+        .sheet(item: $notificationRouter.deepLink) { link in
+            NavigationStack {
+                PokemonDetailView(pokemon: link.pokemon, store: pokemonStore)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(CoreStrings.commonClose) {
+                                notificationRouter.deepLink = nil
+                            }
+                        }
+                    }
+            }
+        }
     }
 }
 
@@ -43,7 +59,8 @@ struct RootView: View {
             cartRepository: PreviewCartRepository(),
             productsRepository: PreviewProductsRepository(),
             onSimulateExpiration: {}
-        )
+        ),
+        notificationRouter: NotificationRouter()
     )
 }
 
