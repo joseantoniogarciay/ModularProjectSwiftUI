@@ -46,6 +46,7 @@ public struct AccountFlowView<CartContent: View>: View {
         .task { await store.start() }
         .onChange(of: store.sessionExpiredAlert) { _, expired in
             guard expired else { return }
+            path.removeAll()
             bannerPresenter?.show(BannerPayload(
                 message: CoreStrings.accountSessionExpiredMessage,
                 style: .warning,
