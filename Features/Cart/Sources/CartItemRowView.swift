@@ -1,4 +1,5 @@
 import Core
+import SharedUI
 import SwiftUI
 
 struct CartItemRowView: View {
@@ -21,14 +22,16 @@ struct CartItemRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.productName)
                     .font(.headline)
+                    .foregroundStyle(SharedUIAsset.text.swiftUIColor)
                 Text(CoreStrings.cartItemDetailFormat(formatted(item.unitPrice), item.quantity))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SharedUIAsset.secondaryText.swiftUIColor)
             }
             Spacer()
             Text(formatted(item.unitPrice * Double(item.quantity)))
                 .font(.headline)
+                .foregroundStyle(SharedUIAsset.text.swiftUIColor)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 14)
     }
 }
