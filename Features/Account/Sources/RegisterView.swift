@@ -90,7 +90,7 @@ struct RegisterView: View {
         let emailTrimmed = email.trimmingCharacters(in: .whitespaces)
         emailError = emailTrimmed.isEmpty
             ? CoreStrings.accountErrorFieldRequired
-            : (!emailTrimmed.contains("@") ? CoreStrings.accountErrorInvalidEmail : nil)
+            : TextFieldValidators.email(CoreStrings.accountErrorInvalidEmail)(emailTrimmed)
         passwordError = password.isEmpty
             ? CoreStrings.accountErrorFieldRequired : nil
         guard usernameError == nil, emailError == nil, passwordError == nil else { return }
