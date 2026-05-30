@@ -4,11 +4,13 @@ import SwiftUI
 struct BannerView: View {
     let payload: BannerPayload
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         HStack(spacing: 12) {
             if let icon = payload.iconSystemName {
                 Image(systemName: icon)
-                    .font(.system(size: 22))
+                    .font(.system(size: 28))
                     .foregroundStyle(payload.style.foregroundColor)
                     .frame(width: 28, height: 28)
                     .accessibilityHidden(true)
@@ -30,7 +32,7 @@ struct BannerView: View {
         .padding(.horizontal, 16)
         .background(payload.style.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 4)
+        .shadow(color: (colorScheme == .dark ? Color.white : .black).opacity(0.18), radius: 12, x: 0, y: 4)
         .accessibilityElement(children: .combine)
     }
 }
