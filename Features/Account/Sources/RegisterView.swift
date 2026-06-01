@@ -55,8 +55,8 @@ struct RegisterView: View {
                             placeholder: CoreStrings.accountEmailPlaceholder,
                             text: $email,
                             error: emailError,
-                            contentType: .emailAddress,
-                            keyboardType: .emailAddress
+                            contentType: .email,
+                            keyboardType: .email
                         )
                         ValidatedTextField(
                             placeholder: CoreStrings.accountPasswordPlaceholder,
@@ -79,6 +79,8 @@ struct RegisterView: View {
                 .frame(minHeight: proxy.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
+            // Drag-to-dismiss the keyboard, matching the UIKit `keyboardDismissMode = .interactive`.
+            .scrollDismissesKeyboard(.interactively)
         }
         .background(SharedUIAsset.background.swiftUIColor.ignoresSafeArea())
         .navigationBarBackButtonHidden(isLoading)

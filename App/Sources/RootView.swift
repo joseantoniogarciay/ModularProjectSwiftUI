@@ -37,12 +37,16 @@ struct RootView: View {
         // matching UIKit's PushNotificationRouter modal present.
         .sheet(item: $notificationRouter.deepLink) { link in
             NavigationStack {
-                PokemonDetailView(pokemon: link.pokemon, store: pokemonStore)
+                PokemonDetailView(pokemon: link.pokemon, store: pokemonStore, showsGreetingBanner: true)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button(CoreStrings.commonClose) {
+                            Button {
                                 notificationRouter.deepLink = nil
+                            } label: {
+                                // Just the X glyph; the toolbar supplies the glass background.
+                                Image(systemName: "xmark")
                             }
+                            .accessibilityLabel(CoreStrings.commonClose)
                         }
                     }
             }

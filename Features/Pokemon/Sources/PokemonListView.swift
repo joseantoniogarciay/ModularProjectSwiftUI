@@ -5,6 +5,11 @@ import SwiftUI
 public struct PokemonListView: View {
     let store: PokemonStore
 
+    /// Navigation is delegated to the owning flow so the `List` rows can stay plain
+    /// `Button`s — a value-based `NavigationLink` would make `List` draw its own
+    /// disclosure chevron on top of the card's chevron.
+    private let onSelect: (Pokemon) -> Void
+
     /// Injected by the App layer; defaults to a no-op in previews. Keeps `UserNotifications` out
     /// of this view — scheduling goes through the `Core` contract.
     @Environment(\.localNotificationScheduler) private var notificationScheduler
@@ -16,8 +21,9 @@ public struct PokemonListView: View {
         ThemePreference(rawValue: themeRaw) ?? .system
     }
 
-    public init(store: PokemonStore) {
+    public init(store: PokemonStore, onSelect: @escaping (Pokemon) -> Void = { _ in }) {
         self.store = store
+        self.onSelect = onSelect
     }
 
     // MARK: - Body
@@ -37,6 +43,9 @@ public struct PokemonListView: View {
                         Image(systemName: "bell.badge")
                     }
                     .accessibilityLabel(CoreStrings.accessibilityNotifyMe)
+                    // Override the TabView accent tint so the bar button renders in the
+                    // label color (black in light, white in dark) like the UIKit nav bar.
+                    .tint(.primary)
 
                     Button {
                         themeRaw = themePreference.next.rawValue
@@ -44,6 +53,7 @@ public struct PokemonListView: View {
                         Image(systemName: themePreference.systemImageName)
                     }
                     .accessibilityLabel(CoreStrings.accessibilityChangeAppearance)
+                    .tint(.primary)
                 }
             }
             .refreshable { await store.loadFirstPage() }
@@ -78,7 +88,9 @@ public struct PokemonListView: View {
         // which forces layout + shadow compositing for each cell appearance.
         List {
             ForEach(store.pokemons, id: \.id) { pokemon in
-                NavigationLink(value: pokemon) {
+                Button {
+                    onSelect(pokemon)
+                } label: {
                     PokemonRowView(pokemon: pokemon)
                 }
                 .buttonStyle(PokemonCardButtonStyle())

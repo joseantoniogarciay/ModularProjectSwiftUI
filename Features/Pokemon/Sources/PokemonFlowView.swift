@@ -5,8 +5,9 @@ import SwiftUI
 ///
 /// Owns the `NavigationStack` and the `NavigationPath` for the Pokémon tab.
 /// It is the single place that decides what to show for each navigation value —
-/// `PokemonListView` emits `NavigationLink(value: pokemon.id)` without knowing
-/// what comes next; this view declares the destination.
+/// `PokemonListView` reports the selected `Pokemon` through `onSelect` without
+/// knowing what comes next; this view appends it to the path and declares the
+/// destination.
 public struct PokemonFlowView: View {
     let store: PokemonStore
     @State private var path = NavigationPath()
@@ -17,7 +18,7 @@ public struct PokemonFlowView: View {
 
     public var body: some View {
         NavigationStack(path: $path) {
-            PokemonListView(store: store)
+            PokemonListView(store: store, onSelect: { path.append($0) })
                 .navigationDestination(for: Pokemon.self) { pokemon in
                     PokemonDetailView(pokemon: pokemon, store: store)
                 }
