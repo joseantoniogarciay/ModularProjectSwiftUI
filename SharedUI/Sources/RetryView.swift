@@ -20,7 +20,8 @@ public struct RetryView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             Button(SharedUIStrings.retryButtonTitle, action: action)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(PrimaryButtonStyle())
+                .fixedSize(horizontal: true, vertical: false)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
