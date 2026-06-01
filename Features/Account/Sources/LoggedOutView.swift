@@ -71,7 +71,8 @@ struct LoggedOutView: View {
                         Button(CoreStrings.accountRegisterButton) {
                             onRegister()
                         }
-                        .font(.subheadline)
+                        .buttonStyle(TextLinkButtonStyle())
+                        .accessibilityAddTraits(.isLink)
                     }
                     .padding(.top, 24)
                 }
@@ -80,6 +81,8 @@ struct LoggedOutView: View {
                 .frame(minHeight: proxy.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
+            // Drag-to-dismiss the keyboard, matching the UIKit `keyboardDismissMode = .interactive`.
+            .scrollDismissesKeyboard(.interactively)
         }
         .background(SharedUIAsset.background.swiftUIColor.ignoresSafeArea())
     }

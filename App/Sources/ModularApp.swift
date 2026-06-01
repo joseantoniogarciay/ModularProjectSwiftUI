@@ -1,13 +1,12 @@
 import Core
 import SharedUI
 import SwiftUI
+#if DEV
+import Pulse
+#endif
 
 @main
 struct ModularApp: App {
-    #if DEV
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    #endif
-
     @AppStorage(ThemePreference.appStorageKey) private var themeRaw: String = ThemePreference.system.rawValue
 
     /// Owns the notification router for the app's lifetime. Its init registers the
@@ -22,6 +21,14 @@ struct ModularApp: App {
         ThemePreference(rawValue: themeRaw) ?? .system
     }
 
+    init() {
+        #if DEV
+        // Was AppDelegate.didFinishLaunching — pure Pulse/Core setup, no UIKit needed here.
+        LogCenter.loggers = [OSLogAppLogger(), PulseAppLogger()]
+        URLSessionProxyDelegate.enableAutomaticRegistration()
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView(
@@ -33,6 +40,7 @@ struct ModularApp: App {
             .environment(\.bannerPresenter, bannerPresenter)
             .environment(\.remoteImageLoader, .kingfisher)
             .preferredColorScheme(themePreference.colorScheme)
+            .pulseConsole()
         }
     }
 }

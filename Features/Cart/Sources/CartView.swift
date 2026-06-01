@@ -4,8 +4,17 @@ import SwiftUI
 
 public struct CartView: View {
     @State var store: CartStore
-    @Environment(\.openURL) private var openURL
     @Environment(\.bannerPresenter) private var bannerPresenter
+
+    /// Stashed when the user confirms "open web": presented as an in-app Safari sheet once the
+    /// confirmation dialog finishes dismissing, mirroring UIKit's `dismiss { presentSafari() }`.
+    @State private var pendingSeedURL: URL?
+    @State private var seedURL: SeedURL?
+
+    /// Mirrors `store.showNoProductsAlert` but is toggled inside a `disablesAnimations`
+    /// transaction so the `fullScreenCover`'s own present/dismiss slide is suppressed — the
+    /// dialog itself cross-dissolves via its internal opacity, matching UIKit's `.crossDissolve`.
+    @State private var dialogShown = false
 
     public init(store: CartStore) {
         self._store = State(initialValue: store)
@@ -44,18 +53,40 @@ public struct CartView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
         .task { await store.load() }
-        .alert(
-            CoreStrings.cartNoProductsTitle,
-            isPresented: $store.showNoProductsAlert
-        ) {
-            Button(CoreStrings.cartNoProductsOpenButton) {
-                if let url = URL(string: "https://api.freeapi.app") {
-                    openURL(url)
-                }
+        // Custom card dialog (mirrors UIKit's ConfirmationDialogViewController), presented over
+        // the whole screen so the dim covers the nav bar too. When confirmed, the in-app Safari
+        // is opened only after the dialog finishes dismissing — matching the UIKit chaining.
+        .fullScreenCover(isPresented: $dialogShown) {
+            if let url = pendingSeedURL {
+                pendingSeedURL = nil
+                seedURL = SeedURL(url: url)
             }
-            Button(CoreStrings.cartNoProductsCancelButton, role: .cancel) {}
-        } message: {
-            Text(CoreStrings.cartNoProductsMessage)
+        } content: {
+            ConfirmationDialogView(
+                icon: "tray",
+                title: CoreStrings.cartNoProductsTitle,
+                message: CoreStrings.cartNoProductsMessage,
+                confirmTitle: CoreStrings.cartNoProductsOpenButton,
+                cancelTitle: CoreStrings.cartNoProductsCancelButton,
+                onConfirm: {
+                    pendingSeedURL = URL(string: "https://api.freeapi.app")
+                    store.showNoProductsAlert = false
+                },
+                onCancel: { store.showNoProductsAlert = false }
+            )
+            .presentationBackground(.clear)
+        }
+        .sheet(item: $seedURL) { seed in
+            SafariView(url: seed.url)
+                .ignoresSafeArea()
+        }
+        // Mirror the store flag into `dialogShown` without animation so the cover never slides;
+        // the dialog handles its own fade in/out. The dialog's callbacks set the store flag back
+        // to false, which propagates here and tears the cover down once the fade has finished.
+        .onChange(of: store.showNoProductsAlert) { _, newValue in
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { dialogShown = newValue }
         }
         .onChange(of: store.addErrorMessage) { _, message in
             guard let message else { return }
@@ -138,18 +169,35 @@ public struct CartView: View {
             }
             .tint(.red)
         }
+        // Break the two trailing items into separate Liquid Glass capsules so the expire
+        // button and the add button don't share one pill. On iOS 17 they're already spaced.
+        if #available(iOS 26.0, *) {
+            ToolbarSpacer(.fixed, placement: .navigationBarTrailing)
+        }
         ToolbarItem(placement: .navigationBarTrailing) {
             if store.isAddingItem {
                 ProgressView()
+                    .tint(.primary)
             } else {
                 Button {
                     Task { await store.addRandomItem() }
                 } label: {
                     Image(systemName: "plus")
                 }
+                // Render in the label color (black in light, white in dark) instead of
+                // inheriting the TabView accent tint, matching the UIKit add button.
+                .tint(.primary)
             }
         }
     }
+}
+
+// MARK: - Seed URL wrapper
+
+/// Identifiable wrapper so the seed-feed URL can drive `.sheet(item:)`.
+private struct SeedURL: Identifiable {
+    let url: URL
+    var id: String { url.absoluteString }
 }
 
 // MARK: - Card chrome (shadow in light / border in dark)

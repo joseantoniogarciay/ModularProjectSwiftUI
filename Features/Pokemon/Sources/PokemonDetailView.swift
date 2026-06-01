@@ -1,7 +1,6 @@
 import Core
 import SharedUI
 import SwiftUI
-import UIKit  // for UIColor luminance calculation
 
 public struct PokemonDetailView: View {
     /// The list-level model — available immediately on push, so the navigation
@@ -10,14 +9,21 @@ public struct PokemonDetailView: View {
     /// `PokemonDetailViewController` rather than just an id.
     let pokemon: Pokemon
     let store: PokemonStore
+    /// Whether to greet the loaded Pokémon with an info banner. Only the push-notification
+    /// entry point opts in; normal list navigation leaves it off.
+    private let showsGreetingBanner: Bool
 
-    public init(pokemon: Pokemon, store: PokemonStore) {
+    public init(pokemon: Pokemon, store: PokemonStore, showsGreetingBanner: Bool = false) {
         self.pokemon = pokemon
         self.store = store
+        self.showsGreetingBanner = showsGreetingBanner
     }
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.bannerPresenter) private var bannerPresenter
+    /// Used to resolve `Color`s to their RGB components for WCAG contrast — the SwiftUI-native
+    /// replacement for `UIColor.getRed(...)`.
+    @Environment(\.self) private var environment
     /// Scales with Dynamic Type so the illustration stays proportional at larger categories.
     @ScaledMetric(relativeTo: .body) private var spriteSize: CGFloat = 200
 
@@ -46,7 +52,8 @@ public struct PokemonDetailView: View {
         .task {
             await store.loadDetail(id: pokemon.id)
             // SwiftUI-only flourish (no UIKit counterpart): greet the loaded Pokémon with an
-            // info banner once its detail finishes loading, in both push and sheet contexts.
+            // info banner once its detail finishes loading — only when reached via push.
+            guard showsGreetingBanner else { return }
             if case .loaded(let detail) = store.detailStates[pokemon.id] {
                 bannerPresenter?.show(BannerPayload(
                     message: detail.name.capitalized,
@@ -240,27 +247,27 @@ private extension PokemonDetailView {
     ]
 
     func typeColor(_ type: String) -> Color {
-        Self.typeColors[type.lowercased()] ?? Color(.systemGray)
+        Self.typeColors[type.lowercased()] ?? .gray
     }
 
     /// WCAG relative luminance — picks black on light backgrounds, white on dark ones.
     /// Threshold 0.5 ensures readability on electric-yellow, pale-cyan, pale-pink chips.
     func contrastingTextColor(on background: Color) -> Color {
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        UIColor(background).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        let toLinear: (CGFloat) -> CGFloat = { channel in
-            channel <= 0.03928 ? channel / 12.92 : pow((channel + 0.055) / 1.055, 2.4)
-        }
-        let luminance = 0.2126 * toLinear(red) + 0.7152 * toLinear(green) + 0.0722 * toLinear(blue)
+        // `Color.Resolved` exposes the linearized sRGB components directly, so we skip the
+        // manual gamma-decode that the UIColor path needed.
+        let resolved = background.resolve(in: environment)
+        let luminance = 0.2126 * Double(resolved.linearRed)
+            + 0.7152 * Double(resolved.linearGreen)
+            + 0.0722 * Double(resolved.linearBlue)
         return luminance > 0.5 ? .black : .white
     }
 
     func barColor(for value: Int) -> Color {
         switch value {
-        case ..<50:    return Color(.systemRed)
-        case 50..<80:  return Color(.systemOrange)
-        case 80..<100: return Color(.systemYellow)
-        default:       return Color(.systemGreen)
+        case ..<50:    return .red
+        case 50..<80:  return .orange
+        case 80..<100: return .yellow
+        default:       return .green
         }
     }
 
